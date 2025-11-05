@@ -1,0 +1,2154 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeffrey Penn | Developer Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <style>
+        /* ===== CSS VARIABLES ===== */
+        :root {
+            --white: #FFFFFF;
+            --light-pink: #FFE6E6;
+            --medium-pink: #FFB6C1;
+            --dark-pink: #FF69B4;
+            --red: #FF4D4D;
+            --transition: all 0.3s ease;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        /* ===== BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            /* Gradient background that changes as you scroll */
+            background: linear-gradient(to bottom, var(--white) 0%, var(--light-pink) 25%, var(--medium-pink) 50%, var(--dark-pink) 75%, var(--red) 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            padding: 100px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+            color: #333;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--red);
+            border-radius: 2px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: var(--red);
+            color: white;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: var(--dark-pink);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--red);
+            color: var(--red);
+        }
+
+        .btn-outline:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        /* ===== BUBBLE STYLES ===== */
+        #bubble-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.5s ease;
+            pointer-events: auto;
+            z-index: 101;
+        }
+
+        .bubble:hover {
+            transform: scale(1.1);
+        }
+
+        .bubble.popped {
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .bubble.fading {
+            opacity: 0.3;
+        }
+
+        /* Bubble counter and controls */
+        .bubble-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1002;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            min-width: 150px;
+            pointer-events: auto;
+        }
+
+        .bubble-counter {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--red);
+        }
+
+        .bubble-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bubble-btn {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        /* ===== HEADER & NAVIGATION ===== */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            box-shadow: var(--shadow);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .logo span {
+            color: var(--red);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--red);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--red);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 3rem;
+        }
+
+        .hero-text {
+            flex: 1;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            color: var(--red);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* ===== ABOUT SECTION ===== */
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+
+        .about-text {
+            flex: 1;
+        }
+
+        .about-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .about-text p {
+            margin-bottom: 1.5rem;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .skill {
+            background: rgba(255, 77, 77, 0.1);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 77, 77, 0.2);
+        }
+
+        .about-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .about-image img {
+            max-width: 100%;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* ===== MARSHMALLOW SECTION ===== */
+        .marshmallow {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-top: 3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .marshmallow-content {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .marshmallow-text {
+            flex: 2;
+        }
+
+        .marshmallow-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--red);
+        }
+
+        .marshmallow-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .marshmallow-image img {
+            max-width: 100%;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* ===== PROJECTS SECTION ===== */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .project-image {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .project-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .project-card:hover .project-image img {
+            transform: scale(1.05);
+        }
+
+        .project-content {
+            padding: 1.5rem;
+        }
+
+        .project-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-content p {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-tag {
+            background: rgba(255, 77, 77, 0.1);
+            color: var(--red);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* ===== DEV DOCS SECTION ===== */
+        .dev-docs {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .docs-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        .docs-nav-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 2px solid var(--red);
+            border-radius: 25px;
+            color: var(--red);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .docs-nav-btn.active, .docs-nav-btn:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        .docs-content {
+            display: none;
+        }
+
+        .docs-content.active {
+            display: block;
+        }
+
+        .docs-section {
+            margin-bottom: 2rem;
+        }
+
+        .docs-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--red);
+            border-bottom: 2px solid var(--red);
+            padding-bottom: 0.5rem;
+        }
+
+        .docs-section h4 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.5rem;
+            color: #333;
+        }
+
+        .architecture-diagram {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--red);
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .tech-item {
+            background: rgba(255, 77, 77, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 77, 77, 0.2);
+            font-size: 0.9rem;
+        }
+
+        .flow-list {
+            list-style-type: none;
+            padding-left: 1rem;
+        }
+
+        .flow-list li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .flow-list li:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--red);
+            font-weight: bold;
+        }
+
+        /* ===== CONTACT SECTION ===== */
+        .contact-content {
+            display: flex;
+            gap: 4rem;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-info p {
+            margin-bottom: 2rem;
+        }
+
+        .contact-details {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 77, 77, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--red);
+        }
+
+        .contact-form {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            color: #333;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--red);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* ===== GRADIENT STAR FOOTER ===== */
+        .gradient-star-footer {
+            background: linear-gradient(to bottom, var(--red) 0%, #8B008B 30%, #4B0082 60%, #000033 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 100px 0 60px;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        .star.small { width: 2px; height: 2px; }
+        .star.medium { width: 3px; height: 3px; }
+        .star.large { width: 4px; height: 4px; }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .social-link {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            color: white;
+        }
+
+        .social-link:hover {
+            background: var(--white);
+            color: var(--red);
+            transform: translateY(-5px);
+        }
+
+        .copyright {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 992px) {
+            .hero-content, .about-content, .contact-content, .marshmallow-content {
+                flex-direction: column;
+            }
+            
+            .hero-text, .about-text, .contact-info {
+                text-align: center;
+            }
+            
+            .hero-btns {
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .bubble-controls {
+                bottom: 10px;
+                right: 10px;
+                min-width: 140px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 0;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                flex-direction: column;
+                align-items: center;
+                padding: 2rem 0;
+                gap: 1.5rem;
+                transform: translateY(-150%);
+                transition: var(--transition);
+                box-shadow: var(--shadow);
+            }
+            
+            .nav-links.active {
+                transform: translateY(0);
+            }
+            
+            .hamburger {
+                display: block;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .bubble-controls {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                margin: 20px auto;
+                width: 90%;
+            }
+
+            .docs-nav {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-btns {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .bubble-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .bubble-btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== BUBBLE CONTAINER ===== -->
+    <div id="bubble-container"></div>
+
+    <!-- ===== BUBBLE CONTROLS ===== -->
+    <div class="bubble-controls">
+        <div class="bubble-counter">Popped: <span id="bubble-count">0</span></div>
+        <div class="bubble-buttons">
+            <button id="bubble-mania" class="btn bubble-btn">Bubblemania!</button>
+            <button id="pop-all" class="btn btn-outline bubble-btn">Pop All!</button>
+        </div>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">Jeffrey Penn<span>.</span></a>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#dev-docs">Dev Docs</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Hi, I'm <span>Jeffrey</span><br>Developer & Problem Solver</h1>
+                    <p>I'm a passionate developer who loves creating digital solutions and exploring the intersection of technology and creativity. Welcome to my portfolio!</p>
+                    <div class="hero-btns">
+                        <a href="#projects" class="btn">View My Work</a>
+                        <a href="#dev-docs" class="btn btn-outline">Technical Docs</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <!-- Placeholder for profile image -->
+                    <div style="width: 350px; height: 350px; background: linear-gradient(135deg, var(--red) 0%, var(--dark-pink) 100%); border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        Profile Image
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ABOUT SECTION ===== -->
+    <section class="about section" id="about">
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Creative Developer & Cat Enthusiast</h3>
+                    <p>I'm a passionate developer with a love for creating elegant solutions to complex problems. When I'm not coding, you can find me exploring new technologies, hiking, or spending time with my cat Marshmallow.</p>
+                    <p>My journey into tech started with a curiosity about how things work, which evolved into a passion for building digital experiences that make people's lives better. I believe in writing clean, maintainable code and constantly learning new skills.</p>
+                    <div class="skills">
+                        <span class="skill">JavaScript</span>
+                        <span class="skill">Python</span>
+                        <span class="skill">React</span>
+                        <span class="skill">Node.js</span>
+                        <span class="skill">HTML/CSS</span>
+                        <span class="skill">Git</span>
+                        <span class="skill">UI/UX Design</span>
+                        <span class="skill">TensorFlow.js</span>
+                        <span class="skill">Three.js</span>
+                        <span class="skill">Chart.js</span>
+                        <span class="skill">WebSockets</span>
+                        <span class="skill">Computer Vision</span>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <!-- Placeholder for about image -->
+                    <div style="width: 300px; height: 400px; background: linear-gradient(135deg, var(--dark-pink) 0%, var(--red) 100%); border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        About Image
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ===== MARSHMALLOW SECTION ===== -->
+            <div class="marshmallow">
+                <div class="marshmallow-content">
+                    <div class="marshmallow-text">
+                        <h3>Meet Marshmallow</h3>
+                        <p>This is Marshmallow, my fluffy companion and coding buddy. She's a 3-year-old ragdoll who loves napping on my keyboard while I work and occasionally contributing to my code with her "paw-typing" skills.</p>
+                        <p>Marshmallow has been my faithful companion through many late-night coding sessions, and she's an expert at reminding me to take breaks when I've been staring at the screen for too long.</p>
+                    </div>
+                    <div class="marshmallow-image">
+                        <!-- Placeholder for Marshmallow's picture -->
+                        <div style="width: 200px; height: 250px; background: linear-gradient(135deg, var(--light-pink) 0%, var(--medium-pink) 100%); border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; text-align: center;">
+                            Marshmallow's Photo
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PROJECTS SECTION ===== -->
+    <section class="projects section" id="projects">
+        <div class="container">
+            <h2 class="section-title">My Projects</h2>
+            <div class="projects-grid">
+                <!-- AI Gesture Control Project -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; flex-direction: column; padding: 2rem;">
+                            <i class="fas fa-robot" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">AI Gesture Control</h3>
+                            <p style="text-align: center;">Hand + Eye Tracking + Voice Commands</p>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>AI Gesture Control</h3>
+                        <p>Revolutionary 3D interaction system using TensorFlow.js for real-time hand and eye tracking, combined with voice commands for immersive control.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">TensorFlow.js</span>
+                            <span class="tech-tag">Three.js</span>
+                            <span class="tech-tag">MediaPipe</span>
+                            <span class="tech-tag">Web Speech API</span>
+                            <span class="tech-tag">Computer Vision</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="ai-gesture.html" class="btn">Live Demo</a>
+                            <a href="#dev-docs" class="btn btn-outline">Technical Docs</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LinguaLearn Project -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); display: flex; align-items: center; justify-content: center; color: white; flex-direction: column; padding: 2rem;">
+                            <i class="fas fa-language" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">LinguaLearn</h3>
+                            <p style="text-align: center;">Language Learning Platform</p>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>LinguaLearn</h3>
+                        <p>Interactive language learning platform with real-time translation, camera text recognition, and personalized learning exercises.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">WebSockets</span>
+                            <span class="tech-tag">OCR</span>
+                            <span class="tech-tag">Translation API</span>
+                            <span class="tech-tag">Real-time Chat</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="EngA.html" class="btn">Live Demo</a>
+                            <a href="#dev-docs" class="btn btn-outline">Technical Docs</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TaskFlow Project -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; flex-direction: column; padding: 2rem;">
+                            <i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">TaskFlow</h3>
+                            <p style="text-align: center;">Developer Collaboration Platform</p>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>TaskFlow</h3>
+                        <p>Collaborative task management platform with real-time chat, code sharing, document management, and project calendar integration.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Real-time Collaboration</span>
+                            <span class="tech-tag">Code Sharing</span>
+                            <span class="tech-tag">File Management</span>
+                            <span class="tech-tag">Calendar API</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="task-manager.html" class="btn">Live Demo</a>
+                            <a href="#dev-docs" class="btn btn-outline">Technical Docs</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VizCraft Project -->
+                <div class="project-card">
+                    <div class="project-image">
+                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); display: flex; align-items: center; justify-content: center; color: white; flex-direction: column; padding: 2rem;">
+                            <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">VizCraft</h3>
+                            <p style="text-align: center;">Data Visualization Dashboard</p>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>VizCraft</h3>
+                        <p>Interactive data visualization platform that transforms raw data into beautiful, insightful charts and graphs with real-time collaboration.</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Chart.js</span>
+                            <span class="tech-tag">Data Processing</span>
+                            <span class="tech-tag">Real-time Updates</span>
+                            <span class="tech-tag">CSV Import</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="VizCraft.html" class="btn">Live Demo</a>
+                            <a href="#dev-docs" class="btn btn-outline">Technical Docs</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== DEV DOCS SECTION ===== -->
+    <section class="section" id="dev-docs">
+        <div class="container">
+            <h2 class="section-title">Developer Documentation</h2>
+            
+            <div class="dev-docs">
+                <div class="docs-nav">
+                    <button class="docs-nav-btn active" data-target="ai-gesture-docs">AI Gesture Control</button>
+                    <button class="docs-nav-btn" data-target="lingualearn-docs">LinguaLearn</button>
+                    <button class="docs-nav-btn" data-target="taskflow-docs">TaskFlow</button>
+                    <button class="docs-nav-btn" data-target="vizcraft-docs">VizCraft</button>
+                    <button class="docs-nav-btn" data-target="portfolio-docs">Portfolio Site</button>
+                </div>
+
+                <!-- AI Gesture Control Documentation -->
+                <div class="docs-content active" id="ai-gesture-docs">
+                    <div class="docs-section">
+                        <h3>AI Gesture Control - Technical Documentation</h3>
+                        <p>An advanced 3D interaction system combining computer vision, machine learning, and real-time 3D rendering.</p>
+                        
+                        <div class="tech-stack">
+                            <span class="tech-item">TensorFlow.js</span>
+                            <span class="tech-item">Three.js</span>
+                            <span class="tech-item">MediaPipe</span>
+                            <span class="tech-item">WebGazer.js</span>
+                            <span class="tech-item">Web Speech API</span>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Architecture Overview</h4>
+                        <div class="architecture-diagram">
+                            <p><strong>Multi-Modal Input System:</strong></p>
+                            <ul class="flow-list">
+                                <li><strong>Hand Tracking:</strong> MediaPipe Hands for 21-point hand landmarks</li>
+                                <li><strong>Eye Tracking:</strong> WebGazer.js for real-time gaze prediction</li>
+                                <li><strong>Voice Commands:</strong> Web Speech API for speech recognition</li>
+                                <li><strong>3D Rendering:</strong> Three.js for interactive 3D environment</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Core Technical Implementation</h4>
+                        
+                        <h5>Hand Pose Detection</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+// Initialize handpose model
+handpose.load().then(model => {
+    this.handposeModel = model;
+    this.startHandDetection();
+});
+
+// Real-time hand detection
+async function detectHands(video) {
+    const predictions = await this.handposeModel.estimateHands(video);
+    if (predictions.length > 0) {
+        const landmarks = predictions[0].landmarks;
+        this.processHandGesture(landmarks);
+    }
+}
+
+// Gesture recognition logic
+function processHandGesture(landmarks) {
+    // Calculate distances between key points
+    const thumbTip = landmarks[4];
+    const indexTip = landmarks[8];
+    const distance = this.calculateDistance(thumbTip, indexTip);
+    
+    // Pinch detection
+    if (distance < 25) {
+        this.triggerSliceAction();
+    }
+}
+                            </code></pre>
+                        </div>
+
+                        <h5>Eye Tracking Integration</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+// Initialize WebGazer for eye tracking
+webgazer.setRegression('ridge')
+    .setTracker('TFT')
+    .setGazeListener((data, elapsedTime) => {
+        if (data) {
+            this.updateGazeIndicator(data.x, data.y);
+            this.detectObjectFocus(data.x, data.y);
+        }
+    })
+    .begin();
+
+// Object focus detection using raycasting
+function detectObjectFocus(x, y) {
+    const vector = new THREE.Vector3(
+        (x / window.innerWidth) * 2 - 1,
+        -(y / window.innerHeight) * 2 + 1,
+        0.5
+    );
+    vector.unproject(camera);
+    
+    const raycaster = new THREE.Raycaster(
+        camera.position,
+        vector.sub(camera.position).normalize()
+    );
+    
+    const intersects = raycaster.intersectObjects(objects);
+    if (intersects.length > 0) {
+        this.highlightFocusedObject(intersects[0].object);
+    }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Performance Optimization</h4>
+                        <ul class="flow-list">
+                            <li><strong>Frame Rate Management:</strong> Predictive interval of 150ms for hand detection</li>
+                            <li><strong>Memory Management:</strong> Automatic cleanup of Three.js objects</li>
+                            <li><strong>Mobile Optimization:</strong> Conditional feature disabling on mobile devices</li>
+                            <li><strong>Progressive Loading:</strong> Sequential model loading to reduce initial load time</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- LinguaLearn Documentation -->
+                <div class="docs-content" id="lingualearn-docs">
+                    <div class="docs-section">
+                        <h3>LinguaLearn - Technical Documentation</h3>
+                        <p>A comprehensive language learning platform with real-time translation and interactive exercises.</p>
+                        
+                        <div class="tech-stack">
+                            <span class="tech-item">WebSockets</span>
+                            <span class="tech-item">OCR Technology</span>
+                            <span class="tech-item">Translation API</span>
+                            <span class="tech-item">Camera API</span>
+                            <span class="tech-item">Real-time Chat</span>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>System Architecture</h4>
+                        <div class="architecture-diagram">
+                            <p><strong>Multi-Module Learning Platform:</strong></p>
+                            <ul class="flow-list">
+                                <li><strong>Text Translation:</strong> Real-time text processing and translation</li>
+                                <li><strong>Camera OCR:</strong> Image-to-text conversion for real-world text</li>
+                                <li><strong>Interactive Exercises:</strong> Dynamic quiz generation</li>
+                                <li><strong>Progress Tracking:</strong> User learning analytics and statistics</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Core Implementation</h4>
+                        
+                        <h5>Real-time Translation Engine</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class TranslationEngine {
+    constructor() {
+        this.socket = io();
+        this.setupSocketListeners();
+    }
+
+    setupSocketListeners() {
+        this.socket.on('translation_result', (translation) => {
+            this.displayTranslation(translation);
+        });
+
+        this.socket.on('image_translation_result', (result) => {
+            this.displayImageTranslation(result);
+        });
+    }
+
+    async translateText(text, sourceLang, targetLang) {
+        this.socket.emit('translate_text', {
+            text: text,
+            sourceLang: sourceLang,
+            targetLang: targetLang
+        });
+    }
+
+    // Word breakdown analysis
+    analyzeWordBreakdown(translation) {
+        return translation.words.map(word => ({
+            original: word.original,
+            translated: word.translated,
+            pronunciation: word.pronunciation,
+            pinyin: word.pinyin
+        }));
+    }
+}
+                            </code></pre>
+                        </div>
+
+                        <h5>Camera OCR Integration</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class CameraOCR {
+    constructor() {
+        this.video = null;
+        this.canvas = null;
+        this.mediaStream = null;
+    }
+
+    async startCamera() {
+        try {
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            });
+            
+            this.video = document.createElement('video');
+            this.video.srcObject = this.mediaStream;
+            this.video.play();
+            
+            return true;
+        } catch (error) {
+            console.error('Camera access failed:', error);
+            return false;
+        }
+    }
+
+    captureAndProcess() {
+        const canvas = document.createElement('canvas');
+        canvas.width = this.video.videoWidth;
+        canvas.height = this.video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(this.video, 0, 0);
+        
+        // Convert to blob and send for OCR processing
+        canvas.toBlob(blob => {
+            this.processImageForOCR(blob);
+        });
+    }
+
+    processImageForOCR(imageBlob) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.socket.emit('process_image_ocr', {
+                imageData: e.target.result,
+                sourceLang: this.sourceLang,
+                targetLang: this.targetLang
+            });
+        };
+        reader.readAsDataURL(imageBlob);
+    }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Learning Algorithm</h4>
+                        <ul class="flow-list">
+                            <li><strong>Spaced Repetition:</strong> Adaptive exercise scheduling based on user performance</li>
+                            <li><strong>Progress Analytics:</strong> Real-time tracking of learning metrics</li>
+                            <li><strong>Personalized Content:</strong> Dynamic exercise generation based on user level</li>
+                            <li><strong>Multi-modal Learning:</strong> Combined text, audio, and visual learning</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- TaskFlow Documentation -->
+                <div class="docs-content" id="taskflow-docs">
+                    <div class="docs-section">
+                        <h3>TaskFlow - Technical Documentation</h3>
+                        <p>A collaborative project management platform with real-time features and integrated tools.</p>
+                        
+                        <div class="tech-stack">
+                            <span class="tech-item">Real-time Collaboration</span>
+                            <span class="tech-item">WebSocket Communication</span>
+                            <span class="tech-item">Code Syntax Highlighting</span>
+                            <span class="tech-item">File Management</span>
+                            <span class="tech-item">Calendar Integration</span>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>System Architecture</h4>
+                        <div class="architecture-diagram">
+                            <p><strong>Real-time Collaboration Platform:</strong></p>
+                            <ul class="flow-list">
+                                <li><strong>Authentication System:</strong> User management and session handling</li>
+                                <li><strong>Real-time Chat:</strong> Channel-based messaging with WebSockets</li>
+                                <li><strong>Code Collaboration:</strong> Shared code editor with syntax highlighting</li>
+                                <li><strong>Document Management:</strong> File upload, storage, and sharing</li>
+                                <li><strong>Project Calendar:</strong> Event scheduling and team coordination</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Core Implementation</h4>
+                        
+                        <h5>Real-time Collaboration Engine</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class CollaborationEngine {
+    constructor() {
+        this.socket = io();
+        this.currentProject = null;
+        this.activeUsers = new Map();
+        this.setupRealTimeFeatures();
+    }
+
+    setupRealTimeFeatures() {
+        // User presence
+        this.socket.on('user_joined', (user) => {
+            this.addActiveUser(user);
+        });
+
+        // Real-time chat
+        this.socket.on('new_message', (message) => {
+            this.displayMessage(message);
+        });
+
+        // Code collaboration
+        this.socket.on('code_update', (update) => {
+            this.syncCodeEditor(update);
+        });
+
+        // File updates
+        this.socket.on('file_updated', (file) => {
+            this.updateFileList(file);
+        });
+    }
+
+    // Real-time code sharing
+    setupCodeSharing() {
+        const codeEditor = document.getElementById('codeEditor');
+        let debounceTimer;
+        
+        codeEditor.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                this.socket.emit('code_change', {
+                    projectId: this.currentProject.id,
+                    code: e.target.value,
+                    language: this.getSelectedLanguage()
+                });
+            }, 300);
+        });
+    }
+}
+                            </code></pre>
+                        </div>
+
+                        <h5>Project Management System</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class ProjectManager {
+    constructor() {
+        this.projects = new Map();
+        this.currentProject = null;
+    }
+
+    createProject(name, description) {
+        const project = {
+            id: this.generateId(),
+            name: name,
+            description: description,
+            createdAt: new Date(),
+            members: [],
+            tasks: [],
+            documents: [],
+            events: []
+        };
+
+        this.projects.set(project.id, project);
+        this.socket.emit('project_created', project);
+        return project;
+    }
+
+    // Task management
+    addTask(projectId, task) {
+        const project = this.projects.get(projectId);
+        if (project) {
+            task.id = this.generateId();
+            task.createdAt = new Date();
+            task.status = 'pending';
+            project.tasks.push(task);
+            
+            this.socket.emit('task_added', { projectId, task });
+            this.updateTaskDisplay(project);
+        }
+    }
+
+    // Document handling
+    async uploadDocument(file, projectId) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('projectId', projectId);
+
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const document = await response.json();
+            this.addDocumentToProject(projectId, document);
+        } catch (error) {
+            console.error('Upload failed:', error);
+        }
+    }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VizCraft Documentation -->
+                <div class="docs-content" id="vizcraft-docs">
+                    <div class="docs-section">
+                        <h3>VizCraft - Technical Documentation</h3>
+                        <p>An interactive data visualization platform for transforming raw data into insightful visual representations.</p>
+                        
+                        <div class="tech-stack">
+                            <span class="tech-item">Chart.js</span>
+                            <span class="tech-item">Data Processing</span>
+                            <span class="tech-item">Real-time Updates</span>
+                            <span class="tech-item">CSV Import</span>
+                            <span class="tech-item">Interactive Charts</span>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Architecture Overview</h4>
+                        <div class="architecture-diagram">
+                            <p><strong>Data Visualization Pipeline:</strong></p>
+                            <ul class="flow-list">
+                                <li><strong>Data Ingestion:</strong> CSV upload and parsing</li>
+                                <li><strong>Data Processing:</strong> Cleaning, transformation, and aggregation</li>
+                                <li><strong>Visualization Engine:</strong> Chart generation and rendering</li>
+                                <li><strong>Interactive Features:</strong> Real-time updates and user interactions</li>
+                                <li><strong>Export System:</strong> Chart export in multiple formats</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Core Implementation</h4>
+                        
+                        <h5>Data Processing Engine</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class DataProcessor {
+    constructor() {
+        this.datasets = new Map();
+        this.transformations = [];
+    }
+
+    // CSV parsing and data preparation
+    parseCSV(csvText, datasetName) {
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        
+        const data = lines.slice(1)
+            .map(line => {
+                const values = line.split(',');
+                if (values.length !== headers.length) return null;
+                
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = this.parseValue(values[index].trim());
+                });
+                return obj;
+            })
+            .filter(row => row !== null);
+
+        const dataset = {
+            id: this.generateId(),
+            name: datasetName,
+            rawData: data,
+            processedData: data,
+            schema: this.analyzeSchema(data, headers),
+            transformations: []
+        };
+
+        this.datasets.set(dataset.id, dataset);
+        return dataset;
+    }
+
+    // Data type inference and schema analysis
+    analyzeSchema(data, headers) {
+        const schema = {};
+        headers.forEach(header => {
+            const sampleValues = data.slice(0, 10).map(row => row[header]);
+            schema[header] = this.inferDataType(sampleValues);
+        });
+        return schema;
+    }
+
+    inferDataType(values) {
+        // Implementation for data type detection
+        if (values.every(v => !isNaN(v) && v !== '')) {
+            return 'number';
+        } else if (values.every(v => !isNaN(Date.parse(v)))) {
+            return 'date';
+        } else {
+            return 'string';
+        }
+    }
+}
+                            </code></pre>
+                        </div>
+
+                        <h5>Visualization Engine</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class VisualizationEngine {
+    constructor() {
+        this.charts = new Map();
+        this.templates = this.loadChartTemplates();
+    }
+
+    createChart(dataset, config) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const chartData = this.prepareChartData(dataset, config);
+        
+        const chart = new Chart(ctx, {
+            type: config.chartType,
+            data: chartData,
+            options: this.getChartOptions(config)
+        });
+
+        const visualization = {
+            id: this.generateId(),
+            chart: chart,
+            dataset: dataset,
+            config: config,
+            canvas: canvas
+        };
+
+        this.charts.set(visualization.id, visualization);
+        return visualization;
+    }
+
+    prepareChartData(dataset, config) {
+        const { xAxis, yAxis, groupBy } = config;
+        
+        if (config.chartType === 'bar' || config.chartType === 'line') {
+            return {
+                labels: dataset.processedData.map(row => row[xAxis]),
+                datasets: [{
+                    label: yAxis,
+                    data: dataset.processedData.map(row => row[yAxis]),
+                    backgroundColor: this.generateColors(dataset.processedData.length)
+                }]
+            };
+        }
+        // Additional chart type preparations...
+    }
+
+    // Real-time data updates
+    updateChart(chartId, newData) {
+        const visualization = this.charts.get(chartId);
+        if (visualization) {
+            visualization.chart.data = this.prepareChartData(
+                visualization.dataset, 
+                visualization.config
+            );
+            visualization.chart.update();
+        }
+    }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Site Documentation -->
+                <div class="docs-content" id="portfolio-docs">
+                    <div class="docs-section">
+                        <h3>Portfolio Website - Technical Documentation</h3>
+                        <p>A responsive, interactive portfolio website with custom animations and project showcases.</p>
+                        
+                        <div class="tech-stack">
+                            <span class="tech-item">Vanilla JavaScript</span>
+                            <span class="tech-item">CSS3 Animations</span>
+                            <span class="tech-item">Responsive Design</span>
+                            <span class="tech-item">Interactive Elements</span>
+                            <span class="tech-item">Performance Optimization</span>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Architecture Overview</h4>
+                        <div class="architecture-diagram">
+                            <p><strong>Single Page Application Structure:</strong></p>
+                            <ul class="flow-list">
+                                <li><strong>Responsive Layout:</strong> Mobile-first design with CSS Grid and Flexbox</li>
+                                <li><strong>Interactive Elements:</strong> Custom bubble system and animations</li>
+                                <li><strong>Smooth Navigation:</strong> Scroll-based animations and section transitions</li>
+                                <li><strong>Performance Optimized:</strong> Efficient rendering and minimal dependencies</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Core Implementation</h4>
+                        
+                        <h5>Bubble Interaction System</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class BubbleSystem {
+    constructor() {
+        this.container = document.getElementById('bubble-container');
+        this.bubbles = [];
+        this.poppedCount = 0;
+        this.init();
+    }
+
+    init() {
+        // Create initial bubbles
+        for (let i = 0; i < 15; i++) {
+            setTimeout(() => this.createBubble(), i * 200);
+        }
+
+        // Animation loop
+        this.animate();
+    }
+
+    createBubble() {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        // Random properties
+        const size = Math.random() * 40 + 20;
+        const x = Math.random() * (window.innerWidth - size);
+        const y = Math.random() * (window.innerHeight - size);
+        
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${x}px`;
+        bubble.style.top = `${y}px`;
+        
+        // Physics properties
+        const bubbleData = {
+            element: bubble,
+            x: x, y: y,
+            speedX: (Math.random() - 0.5) * 2,
+            speedY: (Math.random() - 0.5) * 2,
+            size: size
+        };
+
+        // Interaction handlers
+        bubble.onclick = () => this.popBubble(bubbleData);
+        this.container.appendChild(bubble);
+        this.bubbles.push(bubbleData);
+    }
+
+    animate() {
+        this.bubbles.forEach(bubble => {
+            if (bubble.isPopped) return;
+            
+            // Update position with boundary checking
+            bubble.x += bubble.speedX;
+            bubble.y += bubble.speedY;
+            
+            if (bubble.x <= 0 || bubble.x >= window.innerWidth - bubble.size) {
+                bubble.speedX *= -1;
+            }
+            if (bubble.y <= 0 || bubble.y >= window.innerHeight - bubble.size) {
+                bubble.speedY *= -1;
+            }
+            
+            bubble.element.style.left = `${bubble.x}px`;
+            bubble.element.style.top = `${bubble.y}px`;
+        });
+
+        requestAnimationFrame(() => this.animate());
+    }
+}
+                            </code></pre>
+                        </div>
+
+                        <h5>Responsive Navigation System</h5>
+                        <div class="code-block">
+                            <pre><code class="javascript">
+class NavigationManager {
+    constructor() {
+        this.header = document.getElementById('header');
+        this.navLinks = document.querySelector('.nav-links');
+        this.hamburger = document.querySelector('.hamburger');
+        this.init();
+    }
+
+    init() {
+        // Scroll effects
+        window.addEventListener('scroll', () => {
+            this.toggleHeaderShadow();
+            this.updateActiveNavLink();
+        });
+
+        // Mobile menu
+        this.hamburger.addEventListener('click', () => {
+            this.toggleMobileMenu();
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.scrollToSection(anchor.getAttribute('href'));
+            });
+        });
+    }
+
+    toggleHeaderShadow() {
+        if (window.scrollY > 100) {
+            this.header.classList.add('scrolled');
+        } else {
+            this.header.classList.remove('scrolled');
+        }
+    }
+
+    scrollToSection(sectionId) {
+        const target = document.querySelector(sectionId);
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    }
+}
+                            </code></pre>
+                        </div>
+                    </div>
+
+                    <div class="docs-section">
+                        <h4>Performance Features</h4>
+                        <ul class="flow-list">
+                            <li><strong>Optimized Animations:</strong> Using requestAnimationFrame for smooth performance</li>
+                            <li><strong>Efficient DOM Manipulation:</strong> Minimal reflows and repaints</li>
+                            <li><strong>Lazy Loading:</strong> On-demand content loading</li>
+                            <li><strong>Memory Management:</strong> Proper cleanup of event listeners and objects</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CONTACT SECTION ===== -->
+    <section class="contact section" id="contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Let's Work Together</h3>
+                    <p>I'm always interested in new opportunities and collaborations. Whether you have a project in mind or just want to say hello, feel free to reach out!</p>
+                    
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4>Email</h4>
+                                <p>contact@jeffreypenn.dev</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4>Phone</h4>
+                                <p>+1 (555) 123-4567</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h4>Location</h4>
+                                <p>San Francisco, CA</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Your Email</label>
+                        <input type="email" id="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea id="message" class="form-control" required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== GRADIENT STAR FOOTER ===== -->
+    <footer class="gradient-star-footer">
+        <div id="star-container"></div>
+        <div class="container">
+            <div class="footer-content">
+                <div class="social-links">
+                    <a href="#" class="social-link">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+                <p class="copyright">© 2025 Jeffrey Penn. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ===== SIMPLE BUBBLE SYSTEM =====
+        class BubbleSystem {
+            constructor() {
+                this.container = document.getElementById('bubble-container');
+                this.bubbles = [];
+                this.poppedCount = 0;
+                this.counterElement = document.getElementById('bubble-count');
+                this.init();
+            }
+
+            init() {
+                // Create initial bubbles
+                for (let i = 0; i < 15; i++) {
+                    setTimeout(() => this.createBubble(), i * 200);
+                }
+
+                // Event listeners
+                document.getElementById('bubble-mania').addEventListener('click', () => {
+                    for (let i = 0; i < 25; i++) {
+                        setTimeout(() => this.createBubble(), i * 100);
+                    }
+                });
+
+                document.getElementById('pop-all').addEventListener('click', () => this.popAll());
+
+                // Start animation loop
+                this.animate();
+                
+                // Handle resize
+                window.addEventListener('resize', () => this.handleResize());
+            }
+
+            createBubble() {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                
+                // Random size
+                const size = Math.random() * 40 + 20;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                
+                // Random position
+                const x = Math.random() * (window.innerWidth - size);
+                const y = Math.random() * (window.innerHeight - size);
+                bubble.style.left = `${x}px`;
+                bubble.style.top = `${y}px`;
+                
+                // Random movement
+                const speedX = (Math.random() - 0.5) * 2;
+                const speedY = (Math.random() - 0.5) * 2;
+                
+                this.container.appendChild(bubble);
+
+                const bubbleData = {
+                    element: bubble,
+                    x: x,
+                    y: y,
+                    speedX: speedX,
+                    speedY: speedY,
+                    size: size,
+                    createdAt: Date.now(),
+                    isPopped: false
+                };
+
+                this.bubbles.push(bubbleData);
+
+                // Click event - SIMPLE version
+                bubble.onclick = (e) => {
+                    e.stopPropagation();
+                    this.popBubble(bubbleData);
+                };
+
+                // Touch event
+                bubble.ontouchstart = (e) => {
+                    e.preventDefault();
+                    this.popBubble(bubbleData);
+                };
+
+                return bubbleData;
+            }
+
+            popBubble(bubbleData) {
+                if (bubbleData.isPopped) return;
+                
+                bubbleData.isPopped = true;
+                bubbleData.element.classList.add('popped');
+                this.poppedCount++;
+                this.counterElement.textContent = this.poppedCount;
+                
+                setTimeout(() => {
+                    if (bubbleData.element.parentNode) {
+                        bubbleData.element.remove();
+                    }
+                    // Remove from array
+                    const index = this.bubbles.indexOf(bubbleData);
+                    if (index > -1) {
+                        this.bubbles.splice(index, 1);
+                    }
+                }, 300);
+            }
+
+            popAll() {
+                this.bubbles.forEach(bubble => {
+                    if (!bubble.isPopped) {
+                        this.popBubble(bubble);
+                    }
+                });
+            }
+
+            animate() {
+                this.bubbles.forEach(bubble => {
+                    if (bubble.isPopped) return;
+
+                    // Update position
+                    bubble.x += bubble.speedX;
+                    bubble.y += bubble.speedY;
+
+                    // Bounce off walls
+                    if (bubble.x <= 0 || bubble.x >= window.innerWidth - bubble.size) {
+                        bubble.speedX *= -1;
+                    }
+                    if (bubble.y <= 0 || bubble.y >= window.innerHeight - bubble.size) {
+                        bubble.speedY *= -1;
+                    }
+
+                    // Apply position
+                    bubble.element.style.left = `${bubble.x}px`;
+                    bubble.element.style.top = `${bubble.y}px`;
+                });
+
+                requestAnimationFrame(() => this.animate());
+            }
+
+            handleResize() {
+                // Keep bubbles within bounds on resize
+                this.bubbles.forEach(bubble => {
+                    if (bubble.x > window.innerWidth - bubble.size) {
+                        bubble.x = window.innerWidth - bubble.size;
+                    }
+                    if (bubble.y > window.innerHeight - bubble.size) {
+                        bubble.y = window.innerHeight - bubble.size;
+                    }
+                });
+            }
+        }
+
+        // ===== STAR SYSTEM =====
+        class StarSystem {
+            constructor() {
+                this.container = document.getElementById('star-container');
+                this.stars = [];
+                this.init();
+            }
+
+            init() {
+                this.createStars();
+            }
+
+            createStars() {
+                const starCount = 100;
+                
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    const size = Math.random() * 3 + 1;
+                    const sizeClass = size < 1.5 ? 'small' : size < 2.5 ? 'medium' : 'large';
+                    
+                    star.className = `star ${sizeClass}`;
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.animationDelay = `${Math.random() * 3}s`;
+                    
+                    this.container.appendChild(star);
+                    this.stars.push(star);
+                }
+            }
+        }
+
+        // ===== DEV DOCS NAVIGATION =====
+        class DevDocsManager {
+            constructor() {
+                this.navButtons = document.querySelectorAll('.docs-nav-btn');
+                this.contentSections = document.querySelectorAll('.docs-content');
+                this.init();
+            }
+
+            init() {
+                this.navButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.switchSection(button.dataset.target);
+                    });
+                });
+
+                // Initialize syntax highlighting
+                if (typeof hljs !== 'undefined') {
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                }
+            }
+
+            switchSection(targetId) {
+                // Update active nav button
+                this.navButtons.forEach(button => {
+                    button.classList.remove('active');
+                    if (button.dataset.target === targetId) {
+                        button.classList.add('active');
+                    }
+                });
+
+                // Show target content
+                this.contentSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    }
+                });
+
+                // Scroll to docs section if not already visible
+                const docsSection = document.getElementById('dev-docs');
+                const rect = docsSection.getBoundingClientRect();
+                if (rect.top < 0 || rect.bottom > window.innerHeight) {
+                    docsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+
+        // ===== MAIN APPLICATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize systems
+            new BubbleSystem();
+            new StarSystem();
+            new DevDocsManager();
+
+            // Header scroll effect
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+
+            // Mobile menu toggle
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+            
+            hamburger.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                hamburger.innerHTML = navLinks.classList.contains('active') ? 
+                    '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+            });
+
+            // Close mobile menu when clicking on a link
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    hamburger.innerHTML = '<i class="fas fa-bars"></i>';
+                });
+            });
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Form submission
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Thank you for your message! I\'ll get back to you soon.');
+                    this.reset();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

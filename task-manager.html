@@ -1,0 +1,1195 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Developer Collaboration | Jeffrey's Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a6fd8;
+            --secondary: #764ba2;
+            --accent: #ff6b6b;
+            --success: #4ecdc4;
+            --warning: #ffd93d;
+            --danger: #ff5252;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --border-radius: 20px;
+            --shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .auth-tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--light);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Main App Layout */
+        .app-content {
+            display: none;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+        }
+
+        .project-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .project-dropdown {
+            background: white;
+            border: 2px solid var(--light);
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Bubble Interface */
+        .bubble-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .bubble {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .bubble:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .bubble-header {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .bubble-content {
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Chat Bubble */
+        .chat-channels {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .channel {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            background: var(--light);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .channel.active, .channel:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .channel-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            background: var(--light);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--light);
+            border-radius: var(--border-radius);
+        }
+
+        /* Documents Bubble */
+        .documents-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .document-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .document-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .document-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .document-info {
+            flex: 1;
+        }
+
+        .document-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .document-meta {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--light);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--light);
+        }
+
+        /* Code Share Bubble */
+        .code-editor-container {
+            border: 2px solid var(--light);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .editor-toolbar {
+            background: var(--dark);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .language-select {
+            background: transparent;
+            border: 1px solid var(--gray);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .code-editor {
+            width: 100%;
+            height: 200px;
+            border: none;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            resize: vertical;
+            font-size: 0.9rem;
+        }
+
+        .share-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Calendar Bubble */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-day {
+            text-align: center;
+            font-weight: 600;
+            color: var(--gray);
+            padding: 0.5rem;
+        }
+
+        .calendar-dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .date-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--light);
+        }
+
+        .date-cell:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .date-cell.has-event {
+            background: var(--success);
+            color: white;
+        }
+
+        .date-cell.current-month {
+            background: white;
+        }
+
+        .date-cell.other-month {
+            background: #f8f9fa;
+            color: var(--gray);
+        }
+
+        .events-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .event-item {
+            padding: 1rem;
+            background: var(--light);
+            border-radius: var(--border-radius);
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .event-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .event-meta {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 2rem;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-container">
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="register">Register</div>
+            </div>
+
+            <form class="auth-form active" id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerConfirmPassword">Confirm Password</label>
+                    <input type="password" id="registerConfirmPassword" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Content -->
+    <div class="app-content" id="appContent">
+        <div class="app-container">
+            <header>
+                <h1>TaskFlow</h1>
+                <p class="subtitle">Developer Collaboration Platform</p>
+            </header>
+
+            <div class="app-header">
+                <div class="project-selector">
+                    <label for="projectSelect" style="color: white;">Current Project:</label>
+                    <select id="projectSelect" class="project-dropdown">
+                        <option value="web-app">Web Application v2.0</option>
+                        <option value="mobile-app">Mobile App Development</option>
+                        <option value="api">Backend API</option>
+                        <option value="new">+ Create New Project</option>
+                    </select>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userDisplayName">User</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;" id="userRole">Developer</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bubble-container">
+                <!-- Chat Bubble -->
+                <div class="bubble" id="chatBubble">
+                    <div class="bubble-header">
+                        <h3><i class="fas fa-comments"></i> Team Chat</h3>
+                        <span class="online-indicator">🟢 4 online</span>
+                    </div>
+                    <div class="bubble-content">
+                        <div class="chat-channels">
+                            <div class="channel active" data-channel="general">
+                                <div class="channel-icon">
+                                    <i class="fas fa-hashtag"></i>
+                                </div>
+                                <div>
+                                    <div class="channel-name">General</div>
+                                    <div class="channel-desc">Team discussions</div>
+                                </div>
+                            </div>
+                            <div class="channel" data-channel="frontend">
+                                <div class="channel-icon">
+                                    <i class="fab fa-react"></i>
+                                </div>
+                                <div>
+                                    <div class="channel-name">Frontend</div>
+                                    <div class="channel-desc">UI/UX discussions</div>
+                                </div>
+                            </div>
+                            <div class="channel" data-channel="backend">
+                                <div class="channel-icon">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div>
+                                    <div class="channel-name">Backend</div>
+                                    <div class="channel-desc">API & Database</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message">
+                                <div class="message-header">
+                                    <span class="message-sender">Team</span>
+                                    <span class="message-time">Welcome to TaskFlow!</span>
+                                </div>
+                                <div class="message-content">
+                                    Start collaborating with your team. Join different channels to organize your discussions.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input">
+                            <input type="text" id="chatInput" placeholder="Type your message...">
+                            <button class="btn btn-primary" id="sendMessage">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents Bubble -->
+                <div class="bubble" id="documentsBubble">
+                    <div class="bubble-header">
+                        <h3><i class="fas fa-folder"></i> Shared Documents</h3>
+                        <span class="doc-count">📄 8 files</span>
+                    </div>
+                    <div class="bubble-content">
+                        <div class="documents-grid">
+                            <div class="document-item">
+                                <div class="document-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <div class="document-info">
+                                    <div class="document-name">API Documentation.pdf</div>
+                                    <div class="document-meta">Updated 2 hours ago • 2.4 MB</div>
+                                </div>
+                            </div>
+                            <div class="document-item">
+                                <div class="document-icon">
+                                    <i class="fas fa-file-word"></i>
+                                </div>
+                                <div class="document-info">
+                                    <div class="document-name">Project Requirements.docx</div>
+                                    <div class="document-meta">Updated yesterday • 1.1 MB</div>
+                                </div>
+                            </div>
+                            <div class="document-item">
+                                <div class="document-icon">
+                                    <i class="fas fa-file-excel"></i>
+                                </div>
+                                <div class="document-info">
+                                    <div class="document-name">Development Timeline.xlsx</div>
+                                    <div class="document-meta">Updated 3 days ago • 0.8 MB</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary);"></i>
+                            <div>Click to upload or drag & drop files</div>
+                            <div style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.7;">Supports PDF, DOCX, XLSX, TXT, and images</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Share Bubble -->
+                <div class="bubble" id="codeBubble">
+                    <div class="bubble-header">
+                        <h3><i class="fas fa-code"></i> Code Share</h3>
+                        <span class="share-status">🔗 Live sharing</span>
+                    </div>
+                    <div class="bubble-content">
+                        <div class="code-editor-container">
+                            <div class="editor-toolbar">
+                                <div>
+                                    <i class="fas fa-code"></i>
+                                    <select class="language-select" id="languageSelect">
+                                        <option>JavaScript</option>
+                                        <option>Python</option>
+                                        <option>HTML</option>
+                                        <option>CSS</option>
+                                        <option>Java</option>
+                                        <option>PHP</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <i class="fas fa-users"></i> <span id="collaborators">1 collaborator</span>
+                                </div>
+                            </div>
+                            <textarea class="code-editor" id="codeEditor" placeholder="Start coding together...">// Authentication middleware example
+const authMiddleware = (req, res, next) => {
+    const token = req.header('Authorization');
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};</textarea>
+                        </div>
+                        <div class="share-actions">
+                            <button class="btn btn-primary" id="copyCode">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                            <button class="btn btn-success" id="shareCode">
+                                <i class="fas fa-share-alt"></i> Share Link
+                            </button>
+                            <button class="btn" id="saveSnippet">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Bubble -->
+                <div class="bubble" id="calendarBubble">
+                    <div class="bubble-header">
+                        <h3><i class="fas fa-calendar"></i> Project Calendar</h3>
+                        <span class="event-count">📅 5 events</span>
+                    </div>
+                    <div class="bubble-content">
+                        <div class="calendar-header">
+                            <div class="calendar-nav">
+                                <button class="btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                                <h4 id="currentMonth">February 2024</h4>
+                                <button class="btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <button class="btn btn-primary" id="addEvent">
+                                <i class="fas fa-plus"></i> Add Event
+                            </button>
+                        </div>
+
+                        <div class="calendar-grid">
+                            <div class="calendar-day">Sun</div>
+                            <div class="calendar-day">Mon</div>
+                            <div class="calendar-day">Tue</div>
+                            <div class="calendar-day">Wed</div>
+                            <div class="calendar-day">Thu</div>
+                            <div class="calendar-day">Fri</div>
+                            <div class="calendar-day">Sat</div>
+                        </div>
+
+                        <div class="calendar-dates" id="calendarDates">
+                            <!-- Calendar dates will be generated here -->
+                        </div>
+
+                        <div class="events-list" id="eventsList">
+                            <div class="event-item">
+                                <div class="event-title">Sprint Planning Meeting</div>
+                                <div class="event-meta">Today • 2:00 PM - 3:30 PM</div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-title">API Documentation Review</div>
+                                <div class="event-meta">Tomorrow • 10:00 AM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Portfolio
+            </a>
+        </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Event</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventTitle">Event Title</label>
+                    <input type="text" id="eventTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventDate">Date</label>
+                    <input type="date" id="eventDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventTime">Time</label>
+                    <input type="time" id="eventTime" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventDescription">Description</label>
+                    <textarea id="eventDescription" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-calendar-plus"></i> Add Event
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Authentication System
+        const authModal = document.getElementById('authModal');
+        const appContent = document.getElementById('appContent');
+        let currentUser = null;
+
+        // Auth tabs
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId + 'Form').classList.add('active');
+            });
+        });
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Simple validation
+            if (username && password) {
+                currentUser = {
+                    username: username,
+                    role: 'Developer'
+                };
+                
+                authModal.style.display = 'none';
+                appContent.style.display = 'block';
+                document.getElementById('userDisplayName').textContent = username;
+                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+                
+                // Initialize app features
+                initializeCalendar();
+                initializeChat();
+            }
+        });
+
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            if (username && email && password) {
+                currentUser = {
+                    username: username,
+                    email: email,
+                    role: 'Developer'
+                };
+                
+                authModal.style.display = 'none';
+                appContent.style.display = 'block';
+                document.getElementById('userDisplayName').textContent = username;
+                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+                
+                // Initialize app features
+                initializeCalendar();
+                initializeChat();
+            }
+        });
+
+        // Chat System
+        function initializeChat() {
+            const channels = document.querySelectorAll('.channel');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendMessage');
+            
+            let currentChannel = 'general';
+            
+            channels.forEach(channel => {
+                channel.addEventListener('click', () => {
+                    channels.forEach(c => c.classList.remove('active'));
+                    channel.classList.add('active');
+                    currentChannel = channel.getAttribute('data-channel');
+                    
+                    // Simulate loading channel messages
+                    chatMessages.innerHTML = `
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-sender">System</span>
+                                <span class="message-time">Just now</span>
+                            </div>
+                            <div class="message-content">
+                                Welcome to the ${channel.querySelector('.channel-name').textContent} channel!
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (message && currentUser) {
+                    const messageHTML = `
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="message-sender">${currentUser.username}</span>
+                                <span class="message-time">Just now</span>
+                            </div>
+                            <div class="message-content">${message}</div>
+                        </div>
+                    `;
+                    
+                    chatMessages.insertAdjacentHTML('beforeend', messageHTML);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    chatInput.value = '';
+                }
+            }
+            
+            sendButton.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        }
+
+        // Calendar System
+        function initializeCalendar() {
+            const calendarDates = document.getElementById('calendarDates');
+            const currentMonthEl = document.getElementById('currentMonth');
+            const prevMonthBtn = document.getElementById('prevMonth');
+            const nextMonthBtn = document.getElementById('nextMonth');
+            const eventModal = document.getElementById('eventModal');
+            const eventForm = document.getElementById('eventForm');
+            const addEventBtn = document.getElementById('addEvent');
+            const closeModal = document.querySelector('.close-modal');
+            
+            let currentDate = new Date();
+            let currentMonth = currentDate.getMonth();
+            let currentYear = currentDate.getFullYear();
+            
+            function renderCalendar() {
+                calendarDates.innerHTML = '';
+                currentMonthEl.textContent = new Date(currentYear, currentMonth).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+                
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                const startingDay = firstDay.getDay();
+                const totalDays = lastDay.getDate();
+                
+                // Previous month days
+                const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+                for (let i = startingDay - 1; i >= 0; i--) {
+                    const dateCell = document.createElement('div');
+                    dateCell.className = 'date-cell other-month';
+                    dateCell.textContent = prevMonthLastDay - i;
+                    calendarDates.appendChild(dateCell);
+                }
+                
+                // Current month days
+                for (let i = 1; i <= totalDays; i++) {
+                    const dateCell = document.createElement('div');
+                    dateCell.className = 'date-cell current-month';
+                    dateCell.textContent = i;
+                    
+                    // Mark today
+                    if (i === currentDate.getDate() && currentMonth === currentDate.getMonth() && currentYear === currentDate.getFullYear()) {
+                        dateCell.classList.add('has-event');
+                        dateCell.style.background = 'var(--primary)';
+                    }
+                    
+                    // Random events for demo
+                    if (Math.random() > 0.7 && i > currentDate.getDate()) {
+                        dateCell.classList.add('has-event');
+                    }
+                    
+                    calendarDates.appendChild(dateCell);
+                }
+                
+                // Next month days
+                const totalCells = 42; // 6 weeks
+                const remainingCells = totalCells - (startingDay + totalDays);
+                for (let i = 1; i <= remainingCells; i++) {
+                    const dateCell = document.createElement('div');
+                    dateCell.className = 'date-cell other-month';
+                    dateCell.textContent = i;
+                    calendarDates.appendChild(dateCell);
+                }
+            }
+            
+            prevMonthBtn.addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            });
+            
+            nextMonthBtn.addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            });
+            
+            addEventBtn.addEventListener('click', () => {
+                eventModal.classList.add('active');
+            });
+            
+            closeModal.addEventListener('click', () => {
+                eventModal.classList.remove('active');
+            });
+            
+            eventForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = document.getElementById('eventTitle').value;
+                const date = document.getElementById('eventDate').value;
+                const time = document.getElementById('eventTime').value;
+                
+                if (title && date && time) {
+                    // Add to events list
+                    const eventsList = document.getElementById('eventsList');
+                    const eventHTML = `
+                        <div class="event-item">
+                            <div class="event-title">${title}</div>
+                            <div class="event-meta">${new Date(date).toLocaleDateString()} • ${time}</div>
+                        </div>
+                    `;
+                    eventsList.insertAdjacentHTML('afterbegin', eventHTML);
+                    
+                    // Close modal and reset form
+                    eventModal.classList.remove('active');
+                    eventForm.reset();
+                }
+            });
+            
+            renderCalendar();
+        }
+
+        // Code Share Features
+        document.getElementById('copyCode').addEventListener('click', () => {
+            const codeEditor = document.getElementById('codeEditor');
+            codeEditor.select();
+            document.execCommand('copy');
+            alert('Code copied to clipboard!');
+        });
+
+        document.getElementById('shareCode').addEventListener('click', () => {
+            alert('Shareable link generated! (This would create a real share link in production)');
+        });
+
+        // File Upload
+        document.getElementById('uploadArea').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.docx,.xlsx,.txt,.jpg,.png';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    alert(`File "${file.name}" uploaded successfully!`);
+                }
+            };
+            input.click();
+        });
+
+        // Project Selector
+        document.getElementById('projectSelect').addEventListener('change', (e) => {
+            if (e.target.value === 'new') {
+                const projectName = prompt('Enter new project name:');
+                if (projectName) {
+                    const option = document.createElement('option');
+                    option.value = projectName.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = projectName;
+                    e.target.insertBefore(option, e.target.lastElementChild);
+                    e.target.value = option.value;
+                } else {
+                    e.target.value = 'web-app';
+                }
+            }
+        });
+
+        // Initialize syntax highlighting
+        hljs.highlightAll();
+    </script>
+</body>
+</html>

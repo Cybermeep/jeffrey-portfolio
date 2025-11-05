@@ -1,0 +1,652 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Gesture Control - Jeffrey Penn Portfolio</title>
+    <!-- Load TensorFlow.js and dependencies from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <!-- Fallback for WebGazer - we'll use a simpler approach -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        #container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+        }
+        
+        #three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .panel {
+            position: absolute;
+            background: rgba(25, 25, 35, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: auto;
+        }
+        
+        #info-panel {
+            top: 20px;
+            left: 20px;
+            width: 320px;
+            max-width: 90vw;
+        }
+        
+        #control-panel {
+            bottom: 20px;
+            left: 20px;
+            width: 320px;
+            max-width: 90vw;
+        }
+        
+        #status-panel {
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            max-width: 90vw;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+        
+        h2 {
+            font-size: 18px;
+            margin: 15px 0 10px;
+            color: #FFC107;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .button {
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 8px 0;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .button.secondary {
+            background: linear-gradient(to right, #2196F3, #03A9F4);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-label {
+            font-weight: bold;
+            color: #FFC107;
+        }
+        
+        .status-value {
+            color: #4CAF50;
+        }
+        
+        .gaze-indicator {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 50, 50, 0.8);
+            border: 2px solid white;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            pointer-events: none;
+            transition: all 0.1s ease;
+            display: none;
+        }
+        
+        .hand-skeleton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            z-index: 101;
+            pointer-events: none;
+            display: none;
+            border: 2px solid #4CAF50;
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: white;
+            transform: translateX(-5px);
+        }
+        
+        .performance-warning {
+            color: #ff9800;
+            font-size: 12px;
+            margin-top: 10px;
+            border-left: 3px solid #ff9800;
+            padding-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            #info-panel, #control-panel, #status-panel {
+                position: relative;
+                width: 100%;
+                max-width: 100%;
+                margin: 10px;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+            }
+            
+            .panel {
+                margin-bottom: 10px;
+            }
+            
+            .hand-skeleton {
+                width: 150px;
+                height: 112px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back to Portfolio</a>
+    
+    <div id="container">
+        <div id="three-container"></div>
+        
+        <div id="ui-overlay">
+            <div id="gaze-indicator" class="gaze-indicator"></div>
+            <canvas id="hand-skeleton" class="hand-skeleton"></canvas>
+            
+            <div id="info-panel" class="panel">
+                <h1>AI Gesture Control Demo</h1>
+                <p>This demo showcases hand tracking and 3D interaction using TensorFlow.js and Three.js.</p>
+                <h2>How to Use:</h2>
+                <p>• Enable hand tracking to detect gestures</p>
+                <p>• Move your hand in front of the camera</p>
+                <p>• Make a pinching gesture to interact with 3D objects</p>
+                <div class="performance-warning">
+                    Note: Hand tracking requires a webcam and works best on desktop computers with good lighting.
+                </div>
+            </div>
+            
+            <div id="control-panel" class="panel">
+                <h2>Controls</h2>
+                <button id="hand-toggle" class="button">Enable Hand Tracking</button>
+                <button id="reset-btn" class="button secondary">Reset Scene</button>
+                <button id="voice-btn" class="button" disabled>Voice Commands (Disabled)</button>
+            </div>
+            
+            <div id="status-panel" class="panel">
+                <h2>Status</h2>
+                <div class="status-item">
+                    <span class="status-label">Hand Tracking:</span>
+                    <span id="hand-status" class="status-value">Disabled</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Objects Sliced:</span>
+                    <span id="sliced-count" class="status-value">0</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Focused Object:</span>
+                    <span id="focused-object" class="status-value">None</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Performance:</span>
+                    <span id="performance-status" class="status-value">Good</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let scene, camera, renderer, objects = [];
+        let handposeModel, video, handCanvas, handCtx;
+        let isHandTracking = false;
+        let slicedCount = 0;
+        let focusedObject = null;
+        let lastSliceTime = 0;
+        const sliceCooldown = 800; // ms
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', init);
+
+        async function init() {
+            // Set up Three.js scene
+            initThreeJS();
+            
+            // Set up event listeners
+            document.getElementById('hand-toggle').addEventListener('click', toggleHandTracking);
+            document.getElementById('reset-btn').addEventListener('click', resetScene);
+            
+            // Disable hand tracking on mobile for performance
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                document.getElementById('hand-toggle').disabled = true;
+                document.getElementById('hand-toggle').textContent = 'Not Available on Mobile';
+                document.getElementById('hand-status').textContent = 'Mobile Not Supported';
+            }
+            
+            // Start animation loop
+            animate();
+        }
+
+        function initThreeJS() {
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+
+            // Create camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 5, 15);
+
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('three-container').appendChild(renderer.domElement);
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 3);
+            scene.add(directionalLight);
+
+            // Create initial objects
+            createObjects();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createObjects() {
+            // Clear existing objects
+            objects.forEach(obj => scene.remove(obj));
+            objects = [];
+            slicedCount = 0;
+            document.getElementById('sliced-count').textContent = slicedCount;
+
+            const geometries = [
+                new THREE.BoxGeometry(1.5, 1.5, 1.5),
+                new THREE.SphereGeometry(1, 16, 12),
+                new THREE.ConeGeometry(1, 2, 8),
+                new THREE.CylinderGeometry(1, 1, 2, 12)
+            ];
+
+            const materials = [
+                new THREE.MeshLambertMaterial({ color: 0xff6b6b }),
+                new THREE.MeshLambertMaterial({ color: 0x4ecdc4 }),
+                new THREE.MeshLambertMaterial({ color: 0xffd166 }),
+                new THREE.MeshLambertMaterial({ color: 0x6a0572 }),
+                new THREE.MeshLambertMaterial({ color: 0x06d6a0 })
+            ];
+
+            // Create objects
+            for (let i = 0; i < 12; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.position.x = (Math.random() - 0.5) * 20;
+                mesh.position.y = (Math.random() - 0.5) * 10 + 3;
+                mesh.position.z = (Math.random() - 0.5) * 15;
+                
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+                
+                mesh.userData = {
+                    id: i,
+                    type: geometry.type,
+                    isSliced: false,
+                    originalMaterial: material.clone()
+                };
+                
+                scene.add(mesh);
+                objects.push(mesh);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate objects
+            objects.forEach(obj => {
+                if (!obj.userData.isSliced) {
+                    obj.rotation.y += 0.01;
+                    obj.rotation.x += 0.005;
+                }
+            });
+            
+            renderer.render(scene, camera);
+        }
+
+        async function toggleHandTracking() {
+            if (isHandTracking) {
+                stopHandTracking();
+            } else {
+                await initHandTracking();
+            }
+        }
+
+        async function initHandTracking() {
+            try {
+                updateHandStatus('Loading Model...');
+                
+                // Load handpose model
+                handposeModel = await handpose.load();
+                
+                // Setup webcam
+                video = document.createElement('video');
+                video.width = 640;
+                video.height = 480;
+                video.autoplay = true;
+                video.playsInline = true;
+                
+                // Create canvas for hand skeleton
+                handCanvas = document.getElementById('hand-skeleton');
+                handCtx = handCanvas.getContext('2d');
+                handCanvas.width = 200;
+                handCanvas.height = 150;
+                
+                // Start hand tracking
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                        } 
+                    });
+                    
+                    video.srcObject = stream;
+                    video.addEventListener('loadeddata', predictHands);
+                    updateHandStatus('Active');
+                    isHandTracking = true;
+                    handCanvas.style.display = 'block';
+                    document.getElementById('hand-toggle').textContent = 'Disable Hand Tracking';
+                    
+                    // Simple mouse-based gaze simulation
+                    setupMouseGaze();
+                }
+            } catch (error) {
+                console.error('Error initializing hand tracking:', error);
+                updateHandStatus('Error - Check Camera');
+                alert('Unable to access camera. Please ensure you have a webcam connected and have granted camera permissions.');
+            }
+        }
+
+        function stopHandTracking() {
+            isHandTracking = false;
+            if (video && video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            handCanvas.style.display = 'none';
+            updateHandStatus('Disabled');
+            document.getElementById('hand-toggle').textContent = 'Enable Hand Tracking';
+        }
+
+        function setupMouseGaze() {
+            const gazeIndicator = document.getElementById('gaze-indicator');
+            gazeIndicator.style.display = 'block';
+            
+            document.addEventListener('mousemove', (e) => {
+                gazeIndicator.style.left = e.clientX + 'px';
+                gazeIndicator.style.top = e.clientY + 'px';
+                updateObjectFocus(e.clientX, e.clientY);
+            });
+        }
+
+        async function predictHands() {
+            if (!isHandTracking || !video) return;
+            
+            try {
+                const predictions = await handposeModel.estimateHands(video);
+                
+                // Clear previous drawings
+                handCtx.clearRect(0, 0, handCanvas.width, handCanvas.height);
+                
+                if (predictions.length > 0) {
+                    drawHand(predictions[0]);
+                    detectSlicingGesture(predictions[0]);
+                }
+            } catch (error) {
+                console.error('Hand prediction error:', error);
+            }
+            
+            requestAnimationFrame(predictHands);
+        }
+
+        function drawHand(prediction) {
+            const landmarks = prediction.landmarks;
+            const scaleX = handCanvas.width / video.width;
+            const scaleY = handCanvas.height / video.height;
+            
+            // Draw landmarks
+            handCtx.fillStyle = 'rgba(0, 200, 255, 0.8)';
+            for (let i = 0; i < landmarks.length; i++) {
+                const [x, y] = landmarks[i];
+                handCtx.beginPath();
+                handCtx.arc(x * scaleX, y * scaleY, 3, 0, 2 * Math.PI);
+                handCtx.fill();
+            }
+            
+            // Draw connections
+            handCtx.strokeStyle = 'rgba(0, 200, 255, 0.6)';
+            handCtx.lineWidth = 2;
+            
+            const connections = [
+                [0, 1], [1, 2], [2, 3], [3, 4],
+                [0, 5], [5, 6], [6, 7], [7, 8],
+                [0, 9], [9, 10], [10, 11], [11, 12],
+                [0, 13], [13, 14], [14, 15], [15, 16],
+                [0, 17], [17, 18], [18, 19], [19, 20]
+            ];
+            
+            connections.forEach(([start, end]) => {
+                const [x1, y1] = landmarks[start];
+                const [x2, y2] = landmarks[end];
+                handCtx.beginPath();
+                handCtx.moveTo(x1 * scaleX, y1 * scaleY);
+                handCtx.lineTo(x2 * scaleX, y2 * scaleY);
+                handCtx.stroke();
+            });
+        }
+
+        function detectSlicingGesture(prediction) {
+            const landmarks = prediction.landmarks;
+            const indexTip = landmarks[8];
+            const thumbTip = landmarks[4];
+            
+            // Calculate distance between index and thumb tips
+            const distance = Math.sqrt(
+                Math.pow(indexTip[0] - thumbTip[0], 2) + 
+                Math.pow(indexTip[1] - thumbTip[1], 2)
+            );
+            
+            // Pinch detection
+            if (distance < 30) {
+                const currentTime = Date.now();
+                
+                if (currentTime - lastSliceTime > sliceCooldown) {
+                    if (focusedObject && !focusedObject.userData.isSliced) {
+                        sliceObject(focusedObject);
+                        lastSliceTime = currentTime;
+                    }
+                }
+            }
+        }
+
+        function updateObjectFocus(x, y) {
+            const vector = new THREE.Vector3();
+            vector.set(
+                (x / window.innerWidth) * 2 - 1,
+                -(y / window.innerHeight) * 2 + 1,
+                0.5
+            );
+            
+            vector.unproject(camera);
+            
+            const raycaster = new THREE.Raycaster(
+                camera.position,
+                vector.sub(camera.position).normalize()
+            );
+            
+            const intersects = raycaster.intersectObjects(objects);
+            
+            if (intersects.length > 0) {
+                const newFocusedObject = intersects[0].object;
+                
+                if (focusedObject !== newFocusedObject) {
+                    if (focusedObject) {
+                        focusedObject.material.emissive.setHex(0x000000);
+                    }
+                    
+                    focusedObject = newFocusedObject;
+                    if (!focusedObject.userData.isSliced) {
+                        focusedObject.material.emissive.setHex(0x333300);
+                    }
+                    
+                    document.getElementById('focused-object').textContent = 
+                        `${focusedObject.userData.type}-${focusedObject.userData.id}`;
+                }
+            } else if (focusedObject) {
+                focusedObject.material.emissive.setHex(0x000000);
+                focusedObject = null;
+                document.getElementById('focused-object').textContent = 'None';
+            }
+        }
+
+        function sliceObject(object) {
+            object.userData.isSliced = true;
+            
+            const startScale = { x: 1, y: 1, z: 1 };
+            const startTime = Date.now();
+            const duration = 600;
+            
+            function animateSlice() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                object.scale.x = startScale.x * (1 - easeProgress);
+                object.scale.y = startScale.y * (1 - easeProgress * 0.5);
+                object.scale.z = startScale.z * (1 - easeProgress);
+                
+                object.rotation.y += 0.1;
+                object.position.y -= 0.05;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateSlice);
+                } else {
+                    scene.remove(object);
+                    slicedCount++;
+                    document.getElementById('sliced-count').textContent = slicedCount;
+                }
+            }
+            
+            animateSlice();
+        }
+
+        function resetScene() {
+            createObjects();
+            
+            if (focusedObject) {
+                focusedObject.material.emissive.setHex(0x000000);
+                focusedObject = null;
+                document.getElementById('focused-object').textContent = 'None';
+            }
+        }
+
+        function updateHandStatus(status) {
+            document.getElementById('hand-status').textContent = status;
+            document.getElementById('hand-status').style.color = 
+                status === 'Active' ? '#4CAF50' : 
+                status === 'Loading Model' ? '#FFC107' : '#f44336';
+        }
+    </script>
+</body>
+</html>
