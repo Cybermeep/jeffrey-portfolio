@@ -8,12 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #667eea;
             --primary-dark: #5a6fd8;
@@ -302,6 +297,12 @@
             padding: 1rem;
             border-radius: var(--border-radius);
             background: var(--light);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .message-header {
@@ -582,9 +583,83 @@
             background: rgba(255, 255, 255, 0.3);
             transform: translateX(-5px);
         }
+
+        /* Local Storage Status */
+        .storage-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+
+        /* File Preview Modal */
+        .file-preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .file-preview-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 80%;
+            max-height: 80%;
+            overflow: auto;
+        }
+
+        .file-preview-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        /* Sync Status */
+        .sync-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--success);
+        }
+
+        .sync-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
+    <!-- Storage Status Indicator -->
+    <div class="storage-status" id="storageStatus">
+        <span class="sync-indicator"></span>
+        <span>Local Storage Active</span>
+    </div>
+
     <!-- Authentication Modal -->
     <div class="auth-modal" id="authModal">
         <div class="auth-container">
@@ -620,10 +695,6 @@
                     <label for="registerPassword">Password</label>
                     <input type="password" id="registerPassword" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label for="registerConfirmPassword">Confirm Password</label>
-                    <input type="password" id="registerConfirmPassword" class="form-control" required>
-                </div>
                 <button type="submit" class="btn btn-success" style="width: 100%;">
                     <i class="fas fa-user-plus"></i> Create Account
                 </button>
@@ -637,6 +708,10 @@
             <header>
                 <h1>TaskFlow</h1>
                 <p class="subtitle">Developer Collaboration Platform</p>
+                <div class="sync-status">
+                    <span class="sync-indicator"></span>
+                    <span>GitHub Pages Edition - Local Storage</span>
+                </div>
             </header>
 
             <div class="app-header">
@@ -663,7 +738,9 @@
                 <div class="bubble" id="chatBubble">
                     <div class="bubble-header">
                         <h3><i class="fas fa-comments"></i> Team Chat</h3>
-                        <span class="online-indicator">🟢 4 online</span>
+                        <div class="online-users" id="onlineUsers">
+                            <span style="color: #4CAF50;">●</span> <span id="onlineCount">1</span> online
+                        </div>
                     </div>
                     <div class="bubble-content">
                         <div class="chat-channels">
@@ -699,11 +776,11 @@
                         <div class="chat-messages" id="chatMessages">
                             <div class="message">
                                 <div class="message-header">
-                                    <span class="message-sender">Team</span>
+                                    <span class="message-sender">System</span>
                                     <span class="message-time">Welcome to TaskFlow!</span>
                                 </div>
                                 <div class="message-content">
-                                    Start collaborating with your team. Join different channels to organize your discussions.
+                                    Start collaborating with your team. Messages are saved locally in your browser!
                                 </div>
                             </div>
                         </div>
@@ -721,43 +798,17 @@
                 <div class="bubble" id="documentsBubble">
                     <div class="bubble-header">
                         <h3><i class="fas fa-folder"></i> Shared Documents</h3>
-                        <span class="doc-count">📄 8 files</span>
+                        <span class="doc-count">📄 <span id="docCount">0</span> files</span>
                     </div>
                     <div class="bubble-content">
-                        <div class="documents-grid">
-                            <div class="document-item">
-                                <div class="document-icon">
-                                    <i class="fas fa-file-pdf"></i>
-                                </div>
-                                <div class="document-info">
-                                    <div class="document-name">API Documentation.pdf</div>
-                                    <div class="document-meta">Updated 2 hours ago • 2.4 MB</div>
-                                </div>
-                            </div>
-                            <div class="document-item">
-                                <div class="document-icon">
-                                    <i class="fas fa-file-word"></i>
-                                </div>
-                                <div class="document-info">
-                                    <div class="document-name">Project Requirements.docx</div>
-                                    <div class="document-meta">Updated yesterday • 1.1 MB</div>
-                                </div>
-                            </div>
-                            <div class="document-item">
-                                <div class="document-icon">
-                                    <i class="fas fa-file-excel"></i>
-                                </div>
-                                <div class="document-info">
-                                    <div class="document-name">Development Timeline.xlsx</div>
-                                    <div class="document-meta">Updated 3 days ago • 0.8 MB</div>
-                                </div>
-                            </div>
+                        <div class="documents-grid" id="documentsGrid">
+                            <!-- Documents will be loaded here -->
                         </div>
 
                         <div class="upload-area" id="uploadArea">
                             <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 1rem; color: var(--primary);"></i>
                             <div>Click to upload or drag & drop files</div>
-                            <div style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.7;">Supports PDF, DOCX, XLSX, TXT, and images</div>
+                            <div style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.7;">Files stored locally in browser</div>
                         </div>
                     </div>
                 </div>
@@ -820,7 +871,7 @@ const authMiddleware = (req, res, next) => {
                 <div class="bubble" id="calendarBubble">
                     <div class="bubble-header">
                         <h3><i class="fas fa-calendar"></i> Project Calendar</h3>
-                        <span class="event-count">📅 5 events</span>
+                        <span class="event-count">📅 <span id="eventCount">0</span> events</span>
                     </div>
                     <div class="bubble-content">
                         <div class="calendar-header">
@@ -849,14 +900,7 @@ const authMiddleware = (req, res, next) => {
                         </div>
 
                         <div class="events-list" id="eventsList">
-                            <div class="event-item">
-                                <div class="event-title">Sprint Planning Meeting</div>
-                                <div class="event-meta">Today • 2:00 PM - 3:30 PM</div>
-                            </div>
-                            <div class="event-item">
-                                <div class="event-title">API Documentation Review</div>
-                                <div class="event-meta">Tomorrow • 10:00 AM</div>
-                            </div>
+                            <!-- Events will be loaded here -->
                         </div>
                     </div>
                 </div>
@@ -868,194 +912,530 @@ const authMiddleware = (req, res, next) => {
         </div>
     </div>
 
-    <!-- Add Event Modal -->
-    <div class="modal" id="eventModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add New Event</h3>
-                <button class="close-modal">&times;</button>
-            </div>
-            <form id="eventForm">
-                <div class="form-group">
-                    <label for="eventTitle">Event Title</label>
-                    <input type="text" id="eventTitle" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="eventDate">Date</label>
-                    <input type="date" id="eventDate" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="eventTime">Time</label>
-                    <input type="time" id="eventTime" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="eventDescription">Description</label>
-                    <textarea id="eventDescription" class="form-control" rows="3"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <i class="fas fa-calendar-plus"></i> Add Event
-                </button>
-            </form>
+    <!-- File Preview Modal -->
+    <div class="file-preview-modal" id="filePreviewModal">
+        <div class="file-preview-close" onclick="closeFilePreview()">&times;</div>
+        <div class="file-preview-content" id="filePreviewContent">
+            <!-- File preview will be loaded here -->
         </div>
     </div>
 
     <script>
-        // Authentication System
-        const authModal = document.getElementById('authModal');
-        const appContent = document.getElementById('appContent');
-        let currentUser = null;
-
-        // Auth tabs
-        document.querySelectorAll('.auth-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-                
-                tab.classList.add('active');
-                const tabId = tab.getAttribute('data-tab');
-                document.getElementById(tabId + 'Form').classList.add('active');
-            });
-        });
-
-        // Login form
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            // Simple validation
-            if (username && password) {
-                currentUser = {
-                    username: username,
-                    role: 'Developer'
-                };
-                
-                authModal.style.display = 'none';
-                appContent.style.display = 'block';
-                document.getElementById('userDisplayName').textContent = username;
-                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
-                
-                // Initialize app features
-                initializeCalendar();
-                initializeChat();
+        class GitHubPagesTaskFlow {
+            constructor() {
+                this.currentUser = null;
+                this.currentProject = 'web-app';
+                this.messages = new Map();
+                this.documents = [];
+                this.events = [];
+                this.codeSnippets = [];
+                this.broadcastChannel = null;
+                this.init();
             }
-        });
 
-        // Register form
-        document.getElementById('registerForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('registerUsername').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('registerConfirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                alert('Passwords do not match!');
-                return;
+            init() {
+                this.setupLocalStorage();
+                this.setupBroadcastChannel();
+                this.setupEventListeners();
+                this.loadData();
+                this.initializeCalendar();
+                this.checkExistingSession();
             }
-            
-            if (username && email && password) {
-                currentUser = {
-                    username: username,
-                    email: email,
-                    role: 'Developer'
-                };
-                
-                authModal.style.display = 'none';
-                appContent.style.display = 'block';
-                document.getElementById('userDisplayName').textContent = username;
-                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
-                
-                // Initialize app features
-                initializeCalendar();
-                initializeChat();
-            }
-        });
 
-        // Chat System
-        function initializeChat() {
-            const channels = document.querySelectorAll('.channel');
-            const chatMessages = document.getElementById('chatMessages');
-            const chatInput = document.getElementById('chatInput');
-            const sendButton = document.getElementById('sendMessage');
-            
-            let currentChannel = 'general';
-            
-            channels.forEach(channel => {
-                channel.addEventListener('click', () => {
-                    channels.forEach(c => c.classList.remove('active'));
-                    channel.classList.add('active');
-                    currentChannel = channel.getAttribute('data-channel');
-                    
-                    // Simulate loading channel messages
-                    chatMessages.innerHTML = `
-                        <div class="message">
-                            <div class="message-header">
-                                <span class="message-sender">System</span>
-                                <span class="message-time">Just now</span>
-                            </div>
-                            <div class="message-content">
-                                Welcome to the ${channel.querySelector('.channel-name').textContent} channel!
-                            </div>
-                        </div>
-                    `;
-                });
-            });
-            
-            function sendMessage() {
-                const message = chatInput.value.trim();
-                if (message && currentUser) {
-                    const messageHTML = `
-                        <div class="message">
-                            <div class="message-header">
-                                <span class="message-sender">${currentUser.username}</span>
-                                <span class="message-time">Just now</span>
-                            </div>
-                            <div class="message-content">${message}</div>
-                        </div>
-                    `;
-                    
-                    chatMessages.insertAdjacentHTML('beforeend', messageHTML);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    chatInput.value = '';
+            setupLocalStorage() {
+                // Initialize storage structure
+                if (!localStorage.getItem('taskflow_data')) {
+                    const initialData = {
+                        users: [],
+                        messages: [],
+                        documents: [],
+                        events: [],
+                        codeSnippets: [],
+                        sessions: []
+                    };
+                    localStorage.setItem('taskflow_data', JSON.stringify(initialData));
                 }
             }
-            
-            sendButton.addEventListener('click', sendMessage);
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-        }
 
-        // Calendar System
-        function initializeCalendar() {
-            const calendarDates = document.getElementById('calendarDates');
-            const currentMonthEl = document.getElementById('currentMonth');
-            const prevMonthBtn = document.getElementById('prevMonth');
-            const nextMonthBtn = document.getElementById('nextMonth');
-            const eventModal = document.getElementById('eventModal');
-            const eventForm = document.getElementById('eventForm');
-            const addEventBtn = document.getElementById('addEvent');
-            const closeModal = document.querySelector('.close-modal');
-            
-            let currentDate = new Date();
-            let currentMonth = currentDate.getMonth();
-            let currentYear = currentDate.getFullYear();
-            
-            function renderCalendar() {
+            setupBroadcastChannel() {
+                // For cross-tab communication
+                if ('BroadcastChannel' in window) {
+                    this.broadcastChannel = new BroadcastChannel('taskflow_channel');
+                    
+                    this.broadcastChannel.onmessage = (event) => {
+                        const { type, data } = event.data;
+                        
+                        switch (type) {
+                            case 'new_message':
+                                this.handleBroadcastMessage(data);
+                                break;
+                            case 'document_uploaded':
+                                this.handleBroadcastDocument(data);
+                                break;
+                            case 'user_joined':
+                                this.handleBroadcastUserJoined(data);
+                                break;
+                        }
+                    };
+                }
+            }
+
+            setupEventListeners() {
+                // Auth forms
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+
+                document.getElementById('registerForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegister();
+                });
+
+                // Auth tabs
+                document.querySelectorAll('.auth-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                        
+                        tab.classList.add('active');
+                        const tabId = tab.getAttribute('data-tab');
+                        document.getElementById(tabId + 'Form').classList.add('active');
+                    });
+                });
+
+                // Chat functionality
+                document.getElementById('sendMessage').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+
+                // Channel switching
+                document.querySelectorAll('.channel').forEach(channel => {
+                    channel.addEventListener('click', () => {
+                        document.querySelectorAll('.channel').forEach(c => c.classList.remove('active'));
+                        channel.classList.add('active');
+                        this.loadChannelMessages(channel.dataset.channel);
+                    });
+                });
+
+                // File handling
+                document.getElementById('uploadArea').addEventListener('click', () => {
+                    this.triggerFileUpload();
+                });
+
+                document.getElementById('uploadArea').addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.currentTarget.style.borderColor = 'var(--primary)';
+                });
+
+                document.getElementById('uploadArea').addEventListener('dragleave', (e) => {
+                    e.currentTarget.style.borderColor = 'var(--light)';
+                });
+
+                document.getElementById('uploadArea').addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.currentTarget.style.borderColor = 'var(--light)';
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleFileUpload(files[0]);
+                    }
+                });
+
+                // Code editor functionality
+                document.getElementById('copyCode').addEventListener('click', () => {
+                    this.copyCode();
+                });
+
+                document.getElementById('shareCode').addEventListener('click', () => {
+                    this.shareCode();
+                });
+
+                document.getElementById('saveSnippet').addEventListener('click', () => {
+                    this.saveSnippet();
+                });
+
+                // Calendar functionality
+                document.getElementById('addEvent').addEventListener('click', () => {
+                    this.showEventModal();
+                });
+
+                document.querySelector('.close-modal').addEventListener('click', () => {
+                    this.hideEventModal();
+                });
+
+                document.getElementById('eventForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addEvent();
+                });
+
+                // Calendar navigation
+                document.getElementById('prevMonth').addEventListener('click', () => {
+                    this.changeMonth(-1);
+                });
+
+                document.getElementById('nextMonth').addEventListener('click', () => {
+                    this.changeMonth(1);
+                });
+
+                // Project selector
+                document.getElementById('projectSelect').addEventListener('change', (e) => {
+                    if (e.target.value === 'new') {
+                        this.createNewProject();
+                    } else {
+                        this.switchProject(e.target.value);
+                    }
+                });
+
+                // Auto-save code changes
+                document.getElementById('codeEditor').addEventListener('input', () => {
+                    this.autoSaveCode();
+                });
+            }
+
+            // Authentication Methods
+            handleLogin() {
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                const data = this.getStorageData();
+                const user = data.users.find(u => u.username === username && u.password === password);
+                
+                if (user) {
+                    this.currentUser = user;
+                    this.createSession(user);
+                    this.showMainApp();
+                    this.broadcastUserJoined(user);
+                } else {
+                    alert('Invalid credentials!');
+                }
+            }
+
+            handleRegister() {
+                const username = document.getElementById('registerUsername').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                
+                const data = this.getStorageData();
+                
+                // Check if username exists
+                if (data.users.find(u => u.username === username)) {
+                    alert('Username already exists!');
+                    return;
+                }
+                
+                const newUser = {
+                    id: Date.now(),
+                    username,
+                    email,
+                    password,
+                    role: 'Developer',
+                    created_at: new Date().toISOString()
+                };
+                
+                data.users.push(newUser);
+                this.saveStorageData(data);
+                
+                alert('Registration successful! Please log in.');
+                this.switchToLogin();
+            }
+
+            // Session Management
+            createSession(user) {
+                const session = {
+                    userId: user.id,
+                    username: user.username,
+                    loginTime: new Date().toISOString(),
+                    projectId: this.currentProject
+                };
+                
+                const data = this.getStorageData();
+                data.sessions = data.sessions || [];
+                data.sessions.push(session);
+                this.saveStorageData(data);
+                
+                // Store current session
+                localStorage.setItem('taskflow_current_session', JSON.stringify(session));
+            }
+
+            checkExistingSession() {
+                const session = localStorage.getItem('taskflow_current_session');
+                if (session) {
+                    const sessionData = JSON.parse(session);
+                    const data = this.getStorageData();
+                    const user = data.users.find(u => u.id === sessionData.userId);
+                    
+                    if (user) {
+                        this.currentUser = user;
+                        this.currentProject = sessionData.projectId || 'web-app';
+                        this.showMainApp();
+                        this.broadcastUserJoined(user);
+                    }
+                }
+            }
+
+            // Chat System
+            sendMessage() {
+                const chatInput = document.getElementById('chatInput');
+                const message = chatInput.value.trim();
+                
+                if (!message || !this.currentUser) return;
+
+                const channel = document.querySelector('.channel.active')?.dataset.channel || 'general';
+                
+                const messageData = {
+                    id: Date.now(),
+                    projectId: this.currentProject,
+                    userId: this.currentUser.id,
+                    username: this.currentUser.username,
+                    channel: channel,
+                    message: message,
+                    timestamp: new Date().toISOString()
+                };
+
+                // Save to localStorage
+                const data = this.getStorageData();
+                data.messages.push(messageData);
+                this.saveStorageData(data);
+
+                // Display immediately
+                this.displayMessage(messageData);
+
+                // Broadcast to other tabs
+                this.broadcastMessage(messageData);
+
+                chatInput.value = '';
+            }
+
+            displayMessage(messageData) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageHTML = `
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="message-sender">${messageData.username}</span>
+                            <span class="message-time">${new Date(messageData.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div class="message-content">${this.escapeHtml(messageData.message)}</div>
+                    </div>
+                `;
+                
+                chatMessages.insertAdjacentHTML('beforeend', messageHTML);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            loadChannelMessages(channel) {
+                const data = this.getStorageData();
+                const channelMessages = data.messages.filter(m => 
+                    m.projectId === this.currentProject && m.channel === channel
+                );
+                
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                
+                channelMessages.forEach(message => {
+                    this.displayMessage(message);
+                });
+            }
+
+            // File System (Browser-based)
+            triggerFileUpload() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf,.docx,.xlsx,.txt,.jpg,.png,.jpeg,.gif,.json,.csv,.js,.py,.html,.css';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.handleFileUpload(file);
+                    }
+                };
+                input.click();
+            }
+
+            async handleFileUpload(file) {
+                if (!this.currentUser) return;
+
+                try {
+                    // Convert file to base64 for storage
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const fileData = {
+                            id: Date.now(),
+                            projectId: this.currentProject,
+                            userId: this.currentUser.id,
+                            username: this.currentUser.username,
+                            original_name: file.name,
+                            file_size: file.size,
+                            file_type: file.type,
+                            data: e.target.result, // base64 data
+                            uploaded_at: new Date().toISOString()
+                        };
+
+                        // Save to localStorage
+                        const data = this.getStorageData();
+                        data.documents.push(fileData);
+                        this.saveStorageData(data);
+
+                        // Display file
+                        this.displayFile(fileData);
+
+                        // Broadcast to other tabs
+                        this.broadcastDocument(fileData);
+
+                        this.showNotification('File uploaded successfully!', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    console.error('File upload error:', error);
+                    this.showNotification('File upload failed', 'error');
+                }
+            }
+
+            displayFile(fileData) {
+                const container = document.getElementById('documentsGrid');
+                const fileItem = document.createElement('div');
+                fileItem.className = 'document-item';
+                fileItem.onclick = () => this.previewFile(fileData);
+                
+                fileItem.innerHTML = `
+                    <div class="document-icon">
+                        <i class="fas fa-file-${this.getFileIcon(fileData.file_type)}"></i>
+                    </div>
+                    <div class="document-info">
+                        <div class="document-name">${fileData.original_name}</div>
+                        <div class="document-meta">Uploaded by ${fileData.username} • ${this.formatFileSize(fileData.file_size)}</div>
+                    </div>
+                `;
+                
+                container.appendChild(fileItem);
+                document.getElementById('docCount').textContent = this.getStorageData().documents.length;
+            }
+
+            previewFile(fileData) {
+                const modal = document.getElementById('filePreviewModal');
+                const content = document.getElementById('filePreviewContent');
+                
+                if (fileData.file_type.startsWith('image/')) {
+                    content.innerHTML = `<img src="${fileData.data}" alt="${fileData.original_name}" style="max-width: 100%;">`;
+                } else if (fileData.file_type === 'text/plain' || fileData.file_type === 'application/json') {
+                    // Extract base64 data and decode
+                    const textData = fileData.data.split(',')[1];
+                    const decodedText = atob(textData);
+                    content.innerHTML = `<pre style="white-space: pre-wrap; font-family: monospace;">${this.escapeHtml(decodedText)}</pre>`;
+                } else {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-file-${this.getFileIcon(fileData.file_type)}" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                            <h3>${fileData.original_name}</h3>
+                            <p>File type: ${fileData.file_type}</p>
+                            <p>Size: ${this.formatFileSize(fileData.file_size)}</p>
+                            <button class="btn btn-primary" onclick="downloadFile('${fileData.data}', '${fileData.original_name}')">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                modal.style.display = 'flex';
+            }
+
+            // Code Editor Features
+            copyCode() {
+                const codeEditor = document.getElementById('codeEditor');
+                codeEditor.select();
+                document.execCommand('copy');
+                this.showNotification('Code copied to clipboard!', 'success');
+            }
+
+            shareCode() {
+                const code = document.getElementById('codeEditor').value;
+                const language = document.getElementById('languageSelect').value;
+                
+                // Create shareable link with code data
+                const shareData = {
+                    code: code,
+                    language: language,
+                    timestamp: new Date().toISOString()
+                };
+                
+                const shareUrl = `${window.location.origin}${window.location.pathname}?share=${btoa(JSON.stringify(shareData))}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'TaskFlow Code Share',
+                        text: `Check out this ${language} code snippet`,
+                        url: shareUrl
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    this.showNotification('Share link copied to clipboard!', 'success');
+                }
+            }
+
+            saveSnippet() {
+                const code = document.getElementById('codeEditor').value;
+                const language = document.getElementById('languageSelect').value;
+                
+                const snippet = {
+                    id: Date.now(),
+                    title: `Code Snippet ${new Date().toLocaleDateString()}`,
+                    code: code,
+                    language: language,
+                    created_at: new Date().toISOString()
+                };
+
+                const data = this.getStorageData();
+                data.codeSnippets.push(snippet);
+                this.saveStorageData(data);
+
+                this.showNotification('Code snippet saved locally!', 'success');
+            }
+
+            autoSaveCode() {
+                // Auto-save code every 5 seconds
+                clearTimeout(this.autoSaveTimeout);
+                this.autoSaveTimeout = setTimeout(() => {
+                    const code = document.getElementById('codeEditor').value;
+                    const language = document.getElementById('languageSelect').value;
+                    
+                    localStorage.setItem('taskflow_auto_save', JSON.stringify({
+                        code: code,
+                        language: language,
+                        timestamp: new Date().toISOString()
+                    }));
+                }, 5000);
+            }
+
+            // Calendar System
+            initializeCalendar() {
+                this.currentDate = new Date();
+                this.currentMonth = this.currentDate.getMonth();
+                this.currentYear = this.currentDate.getFullYear();
+                this.renderCalendar();
+                this.loadEvents();
+            }
+
+            renderCalendar() {
+                const calendarDates = document.getElementById('calendarDates');
+                const currentMonthEl = document.getElementById('currentMonth');
+                
                 calendarDates.innerHTML = '';
-                currentMonthEl.textContent = new Date(currentYear, currentMonth).toLocaleDateString('en-US', { 
+                currentMonthEl.textContent = new Date(this.currentYear, this.currentMonth).toLocaleDateString('en-US', { 
                     month: 'long', 
                     year: 'numeric' 
                 });
                 
-                const firstDay = new Date(currentYear, currentMonth, 1);
-                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+                const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
                 const startingDay = firstDay.getDay();
                 const totalDays = lastDay.getDate();
                 
                 // Previous month days
-                const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+                const prevMonthLastDay = new Date(this.currentYear, this.currentMonth, 0).getDate();
                 for (let i = startingDay - 1; i >= 0; i--) {
                     const dateCell = document.createElement('div');
                     dateCell.className = 'date-cell other-month';
@@ -1069,22 +1449,30 @@ const authMiddleware = (req, res, next) => {
                     dateCell.className = 'date-cell current-month';
                     dateCell.textContent = i;
                     
-                    // Mark today
-                    if (i === currentDate.getDate() && currentMonth === currentDate.getMonth() && currentYear === currentDate.getFullYear()) {
+                    // Check if this date has events
+                    const hasEvents = this.events.some(event => {
+                        const eventDate = new Date(event.date);
+                        return eventDate.getDate() === i && 
+                               eventDate.getMonth() === this.currentMonth && 
+                               eventDate.getFullYear() === this.currentYear;
+                    });
+                    
+                    if (hasEvents) {
                         dateCell.classList.add('has-event');
-                        dateCell.style.background = 'var(--primary)';
                     }
                     
-                    // Random events for demo
-                    if (Math.random() > 0.7 && i > currentDate.getDate()) {
-                        dateCell.classList.add('has-event');
+                    if (i === this.currentDate.getDate() && 
+                        this.currentMonth === this.currentDate.getMonth() && 
+                        this.currentYear === this.currentDate.getFullYear()) {
+                        dateCell.style.background = 'var(--primary)';
+                        dateCell.style.color = 'white';
                     }
                     
                     calendarDates.appendChild(dateCell);
                 }
                 
                 // Next month days
-                const totalCells = 42; // 6 weeks
+                const totalCells = 42;
                 const remainingCells = totalCells - (startingDay + totalDays);
                 for (let i = 1; i <= remainingCells; i++) {
                     const dateCell = document.createElement('div');
@@ -1093,103 +1481,309 @@ const authMiddleware = (req, res, next) => {
                     calendarDates.appendChild(dateCell);
                 }
             }
-            
-            prevMonthBtn.addEventListener('click', () => {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
+
+            changeMonth(direction) {
+                this.currentMonth += direction;
+                if (this.currentMonth > 11) {
+                    this.currentMonth = 0;
+                    this.currentYear++;
+                } else if (this.currentMonth < 0) {
+                    this.currentMonth = 11;
+                    this.currentYear--;
                 }
-                renderCalendar();
-            });
-            
-            nextMonthBtn.addEventListener('click', () => {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                }
-                renderCalendar();
-            });
-            
-            addEventBtn.addEventListener('click', () => {
-                eventModal.classList.add('active');
-            });
-            
-            closeModal.addEventListener('click', () => {
-                eventModal.classList.remove('active');
-            });
-            
-            eventForm.addEventListener('submit', (e) => {
-                e.preventDefault();
+                this.renderCalendar();
+            }
+
+            showEventModal() {
+                document.getElementById('eventModal').classList.add('active');
+            }
+
+            hideEventModal() {
+                document.getElementById('eventModal').classList.remove('active');
+                document.getElementById('eventForm').reset();
+            }
+
+            addEvent() {
                 const title = document.getElementById('eventTitle').value;
                 const date = document.getElementById('eventDate').value;
                 const time = document.getElementById('eventTime').value;
+                const description = document.getElementById('eventDescription').value;
                 
                 if (title && date && time) {
-                    // Add to events list
-                    const eventsList = document.getElementById('eventsList');
-                    const eventHTML = `
-                        <div class="event-item">
-                            <div class="event-title">${title}</div>
-                            <div class="event-meta">${new Date(date).toLocaleDateString()} • ${time}</div>
-                        </div>
-                    `;
-                    eventsList.insertAdjacentHTML('afterbegin', eventHTML);
+                    const event = {
+                        id: Date.now(),
+                        title,
+                        date,
+                        time,
+                        description,
+                        projectId: this.currentProject
+                    };
                     
-                    // Close modal and reset form
-                    eventModal.classList.remove('active');
-                    eventForm.reset();
+                    this.events.push(event);
+                    this.saveEvents();
+                    this.renderEvents();
+                    this.hideEventModal();
+                    this.showNotification('Event added successfully!', 'success');
+                    this.renderCalendar(); // Refresh calendar to show new events
                 }
-            });
-            
-            renderCalendar();
-        }
+            }
 
-        // Code Share Features
-        document.getElementById('copyCode').addEventListener('click', () => {
-            const codeEditor = document.getElementById('codeEditor');
-            codeEditor.select();
-            document.execCommand('copy');
-            alert('Code copied to clipboard!');
-        });
+            loadEvents() {
+                const data = this.getStorageData();
+                this.events = data.events.filter(e => e.projectId === this.currentProject) || [];
+                this.renderEvents();
+            }
 
-        document.getElementById('shareCode').addEventListener('click', () => {
-            alert('Shareable link generated! (This would create a real share link in production)');
-        });
+            saveEvents() {
+                const data = this.getStorageData();
+                // Update events for current project
+                data.events = data.events.filter(e => e.projectId !== this.currentProject);
+                data.events.push(...this.events);
+                this.saveStorageData(data);
+            }
 
-        // File Upload
-        document.getElementById('uploadArea').addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.pdf,.docx,.xlsx,.txt,.jpg,.png';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    alert(`File "${file.name}" uploaded successfully!`);
+            renderEvents() {
+                const container = document.getElementById('eventsList');
+                container.innerHTML = this.events.map(event => `
+                    <div class="event-item">
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-meta">${new Date(event.date).toLocaleDateString()} • ${event.time}</div>
+                        ${event.description ? `<div style="margin-top: 0.5rem; font-size: 0.9rem;">${event.description}</div>` : ''}
+                    </div>
+                `).join('');
+                
+                document.getElementById('eventCount').textContent = this.events.length;
+            }
+
+            // Data Management
+            getStorageData() {
+                try {
+                    return JSON.parse(localStorage.getItem('taskflow_data')) || {};
+                } catch (e) {
+                    return {};
                 }
-            };
-            input.click();
-        });
+            }
 
-        // Project Selector
-        document.getElementById('projectSelect').addEventListener('change', (e) => {
-            if (e.target.value === 'new') {
+            saveStorageData(data) {
+                localStorage.setItem('taskflow_data', JSON.stringify(data));
+            }
+
+            // Broadcasting (Cross-tab communication)
+            broadcastMessage(messageData) {
+                if (this.broadcastChannel) {
+                    this.broadcastChannel.postMessage({
+                        type: 'new_message',
+                        data: messageData
+                    });
+                }
+            }
+
+            broadcastDocument(documentData) {
+                if (this.broadcastChannel) {
+                    this.broadcastChannel.postMessage({
+                        type: 'document_uploaded',
+                        data: documentData
+                    });
+                }
+            }
+
+            broadcastUserJoined(userData) {
+                if (this.broadcastChannel) {
+                    this.broadcastChannel.postMessage({
+                        type: 'user_joined',
+                        data: userData
+                    });
+                }
+            }
+
+            handleBroadcastMessage(messageData) {
+                if (messageData.projectId === this.currentProject) {
+                    this.displayMessage(messageData);
+                }
+            }
+
+            handleBroadcastDocument(documentData) {
+                if (documentData.projectId === this.currentProject) {
+                    this.displayFile(documentData);
+                }
+            }
+
+            handleBroadcastUserJoined(userData) {
+                this.updateOnlineUsers();
+            }
+
+            // Utility Functions
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            getFileIcon(mimeType) {
+                const icons = {
+                    'application/pdf': 'pdf',
+                    'application/msword': 'word',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'word',
+                    'application/vnd.ms-excel': 'excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'excel',
+                    'text/plain': 'alt',
+                    'application/json': 'code',
+                    'image/jpeg': 'image',
+                    'image/png': 'image',
+                    'image/gif': 'image'
+                };
+                return icons[mimeType] || 'alt';
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+                    color: white;
+                    padding: 1rem 1.5rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    transform: translateX(400px);
+                    transition: transform 0.3s ease;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => notification.style.transform = 'translateX(0)', 100);
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(400px)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+
+            loadData() {
+                const data = this.getStorageData();
+                
+                // Load messages for current project
+                const projectMessages = data.messages.filter(m => m.projectId === this.currentProject) || [];
+                projectMessages.forEach(message => {
+                    this.displayMessage(message);
+                });
+
+                // Load documents for current project
+                const projectDocuments = data.documents.filter(d => d.projectId === this.currentProject) || [];
+                projectDocuments.forEach(document => {
+                    this.displayFile(document);
+                });
+
+                // Load code snippets
+                this.codeSnippets = data.codeSnippets || [];
+                
+                // Load auto-saved code if exists
+                const autoSave = localStorage.getItem('taskflow_auto_save');
+                if (autoSave) {
+                    const savedData = JSON.parse(autoSave);
+                    document.getElementById('codeEditor').value = savedData.code;
+                    document.getElementById('languageSelect').value = savedData.language;
+                }
+            }
+
+            showMainApp() {
+                document.getElementById('authModal').style.display = 'none';
+                document.getElementById('appContent').style.display = 'block';
+                document.getElementById('userDisplayName').textContent = this.currentUser.username;
+                document.getElementById('userAvatar').textContent = this.currentUser.username.charAt(0).toUpperCase();
+                document.getElementById('userRole').textContent = this.currentUser.role;
+            }
+
+            switchToLogin() {
+                document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+                document.querySelector('[data-tab="login"]').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            }
+
+            switchProject(projectId) {
+                this.currentProject = projectId;
+                
+                // Save to session
+                const session = JSON.parse(localStorage.getItem('taskflow_current_session') || '{}');
+                session.projectId = projectId;
+                localStorage.setItem('taskflow_current_session', JSON.stringify(session));
+                
+                // Reload data for new project
+                this.loadData();
+                this.loadEvents();
+            }
+
+            createNewProject() {
                 const projectName = prompt('Enter new project name:');
                 if (projectName) {
+                    const select = document.getElementById('projectSelect');
                     const option = document.createElement('option');
                     option.value = projectName.toLowerCase().replace(/\s+/g, '-');
                     option.textContent = projectName;
-                    e.target.insertBefore(option, e.target.lastElementChild);
-                    e.target.value = option.value;
+                    select.insertBefore(option, select.lastElementChild);
+                    select.value = option.value;
+                    this.switchProject(option.value);
+                    this.showNotification(`Project "${projectName}" created!`, 'success');
                 } else {
-                    e.target.value = 'web-app';
+                    document.getElementById('projectSelect').value = this.currentProject;
+                }
+            }
+
+            downloadFile(dataUrl, filename) {
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = filename;
+                link.click();
+            }
+        }
+
+        // Global functions
+        function closeFilePreview() {
+            document.getElementById('filePreviewModal').style.display = 'none';
+        }
+
+        function downloadFile(dataUrl, filename) {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = filename;
+            link.click();
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.taskFlowApp = new GitHubPagesTaskFlow();
+            
+            // Handle shared code from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const shareData = urlParams.get('share');
+            if (shareData) {
+                try {
+                    const sharedCode = JSON.parse(atob(shareData));
+                    document.getElementById('codeEditor').value = sharedCode.code;
+                    document.getElementById('languageSelect').value = sharedCode.language;
+                    taskFlowApp.showNotification('Shared code loaded!', 'success');
+                } catch (e) {
+                    console.error('Invalid share data', e);
                 }
             }
         });
 
-        // Initialize syntax highlighting
-        hljs.highlightAll();
+        // Close file preview on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFilePreview();
+            }
+        });
     </script>
 </body>
 </html>
